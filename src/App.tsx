@@ -163,39 +163,93 @@ function App() {
             </div>
             
             <div className="space-y-6">
-              <h3 className="text-3xl font-bold text-blue-900 font-playfair">Guruji's Journey</h3>
+              <h3 className="text-3xl font-bold text-blue-900 font-playfair">Meet Our Founder</h3>
               
               <p className="text-lg text-blue-800 leading-relaxed">
-                With over 15 years of dedicated practice and teaching, our founder has mastered the 
-                intricate art of Indian classical flute. Trained under renowned maestros, they have 
-                performed at prestigious venues and festivals across the country.
+                Dedicated and passionate Indian classical flute player with a strong background in music education and performance. With over 20 years of teaching experience and professional training under the guidance of renowned gurus Sri Bishwajit Sarkar and Sri Ashok Kumar Karmakar, I have developed expertise in multiple genres, including classical, folk, contemporary, Rabindrasangeet, and Bollywood music.
               </p>
               
               <p className="text-lg text-blue-800 leading-relaxed">
-                Their teaching philosophy centers on patience, dedication, and spiritual connection 
-                to the music. Every student is guided not just in technique, but in understanding 
-                the deeper essence of flute music as a form of meditation and devotion.
+                My goal is to inspire and educate students by imparting traditional and contemporary music knowledge while fostering a deep appreciation for Indian musical heritage.
               </p>
               
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Star className="w-5 h-5 text-blue-500" />
-                  <span className="text-blue-800">Certified in Hindustani Classical Music</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Star className="w-5 h-5 text-blue-500" />
-                  <span className="text-blue-800">Performed at 50+ Cultural Events</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Star className="w-5 h-5 text-blue-500" />
-                  <span className="text-blue-800">Specialized in Krishna Bhajans & Ragas</span>
+              <div className="space-y-6">
+                <h4 className="text-xl font-semibold text-blue-900 font-playfair">Skills & Expertise</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <Star className="w-5 h-5 text-blue-500" />
+                    <span className="text-blue-800">Classical & Contemporary Flute Performance</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Star className="w-5 h-5 text-blue-500" />
+                    <span className="text-blue-800">Music Theory & Instrumental Training</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Star className="w-5 h-5 text-blue-500" />
+                    <span className="text-blue-800">Rabindrasangeet & Bollywood Music</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Star className="w-5 h-5 text-blue-500" />
+                    <span className="text-blue-800">Student Mentorship & Curriculum Development</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Star className="w-5 h-5 text-blue-500" />
+                    <span className="text-blue-800">Conducting Music Workshops & Events</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Star className="w-5 h-5 text-blue-500" />
+                    <span className="text-blue-800">Collaboration with Renowned Musicians</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Star className="w-5 h-5 text-blue-500" />
+                    <span className="text-blue-800">Personalized Training for Beginners & Advanced Students</span>
+                  </div>
                 </div>
               </div>
               
-              <blockquote className="border-l-4 border-blue-500 pl-6 italic text-blue-700 text-lg">
-                "Music is the bridge between the earthly and the divine. Through Krishna's flute, 
-                we learn not just to play notes, but to touch souls."
-              </blockquote>
+              <div className="space-y-4">
+                <h4 className="text-xl font-semibold text-blue-900 font-playfair">Performance & Achievements</h4>
+                <div className="flex items-center space-x-3">
+                  <Music className="w-5 h-5 text-blue-500" />
+                  <span className="text-blue-800">Featured artist on TV channels like Kannada Doordarshan and Tara Bangla</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Music className="w-5 h-5 text-blue-500" />
+                  <span className="text-blue-800">Performed in prestigious music events across India, including West Bengal, Bhubaneswar, and Bangalore</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Music className="w-5 h-5 text-blue-500" />
+                  <span className="text-blue-800">Collaborated with eminent music arrangers and artists nationwide</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Music className="w-5 h-5 text-blue-500" />
+                  <span className="text-blue-800">Developed and uploaded flute tutorials and backing tracks for students and music enthusiasts</span>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h4 className="text-xl font-semibold text-blue-900 font-playfair">Experience</h4>
+                <div className="bg-gradient-to-br from-blue-50 to-yellow-50 p-4 rounded-lg">
+                  <h5 className="font-semibold text-blue-900 mb-2">Founder & Music Educator</h5>
+                  <p className="text-sm text-blue-700 mb-2">Krishna Flute Academy | 2019 - Present</p>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• Established a flute academy dedicated to teaching Indian classical and contemporary flute music</li>
+                    <li>• Trained numerous students, helping them master flute techniques and understand music theory</li>
+                    <li>• Organized workshops, interactive sessions, and live performances for students</li>
+                    <li>• Promoted Indian classical music through collaborative performances and online tutorials</li>
+                  </ul>
+                </div>
+                <div className="bg-gradient-to-br from-blue-50 to-yellow-50 p-4 rounded-lg">
+                  <h5 className="font-semibold text-blue-900 mb-2">Guest Performer & Instructor</h5>
+                  <p className="text-sm text-blue-700 mb-2">Various Schools & Cultural Institutions | 2010 - Present</p>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• Conducted flute training sessions and music appreciation classes in schools and institutions</li>
+                    <li>• Guided students in both practical performance and theoretical knowledge of Indian music</li>
+                    <li>• Performed at school events, showcasing Indian classical and folk music traditions</li>
+                    <li>• Notable institutions: Ramkrishna Mission Ashram Belur, Kendriya Vidyalaya Malleshwaram, ISKCON</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
