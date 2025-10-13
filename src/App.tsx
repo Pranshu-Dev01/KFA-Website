@@ -41,39 +41,42 @@ function App() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-16 px-4 sm:px-6 lg:px-8">
+      <section className="relative pt-20 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/Top pic.jpg" 
+            alt="Krishna Flute Academy - Beautiful Flutes" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 via-blue-800/70 to-yellow-900/80"></div>
+        </div>
+        
         <div className="max-w-7xl mx-auto">
-          <div className={`text-center transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <div className="mb-8 flex justify-center">
-              <div className="relative">
-                <img 
-                  src="/public/image.png" 
-                  alt="Krishna Flute Academy" 
-                  className="h-32 w-32 object-contain mx-auto drop-shadow-2xl"
-                />
-                <div className="absolute -inset-4 bg-gradient-to-r from-blue-400/20 to-yellow-400/20 rounded-full blur-xl"></div>
-              </div>
+          <div className={`relative z-10 text-center transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+            <div className="mb-8 text-white/90 text-lg font-medium tracking-wider uppercase">
+              Turn Your Breath Into Tunes
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold text-blue-900 mb-6 font-playfair leading-tight">
-              Master the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-yellow-600">Divine Flute</span>
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 font-playfair leading-tight drop-shadow-2xl">
+              KRISHNA FLUTE <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-200">ACADEMY</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-blue-700 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Learn Krishna's sacred melodies with traditional techniques and modern teaching methods.
+            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-lg">
+              Learn Krishna's sacred melodies with traditional techniques and modern teaching methods
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button 
                 onClick={() => scrollToSection('courses')}
-                className="bg-gradient-to-r from-blue-500 to-yellow-500 text-white px-8 py-4 rounded-full text-lg font-semibold hover:from-blue-600 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-xl flex items-center space-x-2"
+                className="bg-gradient-to-r from-yellow-500 to-yellow-400 text-blue-900 px-8 py-4 rounded-full text-lg font-bold hover:from-yellow-400 hover:to-yellow-300 transition-all duration-300 transform hover:scale-105 shadow-2xl flex items-center space-x-2"
               >
                 <Play className="w-5 h-5" />
-                <span>Start Your Journey</span>
+                <span>Book Your Class Now!</span>
               </button>
               <button 
                 onClick={() => scrollToSection('about')}
-                className="border-2 border-blue-500 text-blue-600 px-8 py-4 rounded-full text-lg font-semibold hover:bg-blue-500 hover:text-white transition-all duration-300 transform hover:scale-105 flex items-center space-x-2"
+                className="border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-blue-900 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 backdrop-blur-sm"
               >
                 <BookOpen className="w-5 h-5" />
                 <span>Learn More</span>
@@ -146,11 +149,11 @@ function App() {
             <div className="relative">
               <div className="relative overflow-hidden rounded-2xl shadow-2xl">
                 <img 
-                  src="/public/image.png" 
+                  src="/Top pic.jpg" 
                   alt="Founder of Krishna Flute Academy" 
-                  className="w-full h-96 object-cover"
+                  className="w-full h-96 object-cover object-center"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/40 to-transparent"></div>
               </div>
               <div className="absolute -bottom-4 -right-4 bg-gradient-to-r from-blue-500 to-yellow-500 rounded-full p-4 shadow-xl">
                 <Sparkles className="w-8 h-8 text-white" />
@@ -449,9 +452,9 @@ function App() {
             <div>
               <div className="flex items-center space-x-3 mb-4">
                 <img 
-                  src="/public/image.png" 
+                  src="/Top pic.jpg" 
                   alt="Krishna Flute Academy" 
-                  className="h-10 w-10 object-contain"
+                  className="h-10 w-10 object-cover rounded-full"
                 />
                 <span className="text-xl font-bold font-playfair">Krishna Flute Academy</span>
               </div>
