@@ -56,13 +56,11 @@ function App() {
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold text-blue-900 mb-6 font-playfair leading-tight">
-              Learn the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-yellow-600">Divine Art</span>
-              <br />of Krishna's Flute
+              Master the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-yellow-600">Divine Flute</span>
             </h1>
             
             <p className="text-xl md:text-2xl text-blue-700 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Discover the enchanting melodies that touched hearts for millennia. 
-              Master the sacred bamboo flute with traditional techniques and modern teaching methods.
+              Learn Krishna's sacred melodies with traditional techniques and modern teaching methods.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -92,23 +90,20 @@ function App() {
       <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6 font-playfair">About Our Academy</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6 font-playfair">Why Choose Us</h2>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-yellow-500 mx-auto mb-8"></div>
           </div>
           
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <p className="text-lg text-blue-800 leading-relaxed">
-                Krishna Flute Academy is a sacred space where the timeless art of flute playing comes alive. 
-                Inspired by the divine melodies of Lord Krishna's flute, we dedicate ourselves to preserving 
-                and sharing this beautiful tradition with students of all ages and skill levels.
+                Krishna Flute Academy preserves the sacred art of flute playing through traditional Indian techniques. 
+                We guide students of all ages in mastering this divine instrument.
               </p>
               
               <p className="text-lg text-blue-800 leading-relaxed">
-                Our academy combines traditional Indian classical techniques with modern pedagogical approaches, 
-                ensuring that each student receives personalized attention and guidance. Whether you're a complete 
-                beginner drawn to the flute's enchanting sound or an advanced player seeking to deepen your artistry, 
-                we provide a nurturing environment for your musical journey.
+                Combining classical methods with modern teaching, we provide personalized guidance for beginners 
+                to advanced players in a nurturing environment.
               </p>
               
               <div className="grid grid-cols-2 gap-6 mt-8">
@@ -143,7 +138,7 @@ function App() {
       <section id="founder" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6 font-playfair">Meet Our Founder</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6 font-playfair">Our Guru</h2>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-yellow-500 mx-auto mb-8"></div>
           </div>
           
@@ -163,18 +158,18 @@ function App() {
             </div>
             
             <div className="space-y-6">
-              <h3 className="text-3xl font-bold text-blue-900 font-playfair">Meet Our Founder</h3>
+              <h3 className="text-3xl font-bold text-blue-900 font-playfair">Master Musician & Educator</h3>
               
               <p className="text-lg text-blue-800 leading-relaxed">
-                Dedicated and passionate Indian classical flute player with a strong background in music education and performance. With over 20 years of teaching experience and professional training under the guidance of renowned gurus Sri Bishwajit Sarkar and Sri Ashok Kumar Karmakar, I have developed expertise in multiple genres, including classical, folk, contemporary, Rabindrasangeet, and Bollywood music.
+                Dedicated Indian classical flute player with 20+ years of teaching experience. Trained under renowned gurus Sri Bishwajit Sarkar and Sri Ashok Kumar Karmakar, with expertise in classical, folk, contemporary, Rabindrasangeet, and Bollywood music.
               </p>
               
               <p className="text-lg text-blue-800 leading-relaxed">
-                My goal is to inspire and educate students by imparting traditional and contemporary music knowledge while fostering a deep appreciation for Indian musical heritage.
+                Dedicated to inspiring students through traditional and contemporary music knowledge while fostering appreciation for Indian musical heritage.
               </p>
               
               <div className="space-y-6">
-                <h4 className="text-xl font-semibold text-blue-900 font-playfair">Skills & Expertise</h4>
+                <h4 className="text-xl font-semibold text-blue-900 font-playfair">Expertise</h4>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <Star className="w-5 h-5 text-blue-500" />
@@ -208,7 +203,7 @@ function App() {
               </div>
               
               <div className="space-y-4">
-                <h4 className="text-xl font-semibold text-blue-900 font-playfair">Performance & Achievements</h4>
+                <h4 className="text-xl font-semibold text-blue-900 font-playfair">Achievements</h4>
                 <div className="flex items-center space-x-3">
                   <Music className="w-5 h-5 text-blue-500" />
                   <span className="text-blue-800">Featured artist on TV channels like Kannada Doordarshan and Tara Bangla</span>
@@ -233,19 +228,19 @@ function App() {
                   <h5 className="font-semibold text-blue-900 mb-2">Founder & Music Educator</h5>
                   <p className="text-sm text-blue-700 mb-2">Krishna Flute Academy | 2019 - Present</p>
                   <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• Established a flute academy dedicated to teaching Indian classical and contemporary flute music</li>
-                    <li>• Trained numerous students, helping them master flute techniques and understand music theory</li>
-                    <li>• Organized workshops, interactive sessions, and live performances for students</li>
-                    <li>• Promoted Indian classical music through collaborative performances and online tutorials</li>
+                    <li>• Established academy for Indian classical and contemporary flute music</li>
+                    <li>• Trained numerous students in flute techniques and music theory</li>
+                    <li>• Organized workshops, sessions, and live performances</li>
+                    <li>• Promoted Indian classical music through performances and online tutorials</li>
                   </ul>
                 </div>
                 <div className="bg-gradient-to-br from-blue-50 to-yellow-50 p-4 rounded-lg">
                   <h5 className="font-semibold text-blue-900 mb-2">Guest Performer & Instructor</h5>
                   <p className="text-sm text-blue-700 mb-2">Various Schools & Cultural Institutions | 2010 - Present</p>
                   <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• Conducted flute training sessions and music appreciation classes in schools and institutions</li>
-                    <li>• Guided students in both practical performance and theoretical knowledge of Indian music</li>
-                    <li>• Performed at school events, showcasing Indian classical and folk music traditions</li>
+                    <li>• Conducted flute training and music appreciation classes</li>
+                    <li>• Guided students in practical performance and music theory</li>
+                    <li>• Performed at events showcasing Indian classical and folk traditions</li>
                     <li>• Notable institutions: Ramkrishna Mission Ashram Belur, Kendriya Vidyalaya Malleshwaram, ISKCON</li>
                   </ul>
                 </div>
@@ -259,39 +254,39 @@ function App() {
       <section id="courses" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6 font-playfair">Our Courses</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6 font-playfair">Learn With Us</h2>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-yellow-500 mx-auto mb-8"></div>
             <p className="text-xl text-blue-700 max-w-3xl mx-auto">
-              Choose from our carefully crafted programs designed for every skill level and age group
+              Programs designed for every skill level and age group
             </p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
-                title: "Beginner Course",
-                description: "Perfect for those taking their first steps into the world of flute music",
+                title: "Beginner",
+                description: "Perfect for your first steps into flute music",
                 features: ["Basic breathing techniques", "Simple melodies", "Music theory basics", "Posture & holding"],
                 icon: <Play className="w-8 h-8" />,
                 color: "from-blue-400 to-blue-600"
               },
               {
-                title: "Intermediate Course", 
-                description: "Build upon your foundation with more complex techniques and compositions",
+                title: "Intermediate", 
+                description: "Build your foundation with advanced techniques",
                 features: ["Advanced breathing", "Classical ragas", "Improvisation skills", "Performance techniques"],
                 icon: <Music className="w-8 h-8" />,
                 color: "from-yellow-400 to-yellow-600"
               },
               {
-                title: "Advanced Course",
-                description: "Master the art with intricate compositions and professional techniques",
+                title: "Advanced",
+                description: "Master intricate compositions and professional techniques",
                 features: ["Complex ragas", "Taan & meend", "Concert preparation", "Teaching methodology"],
                 icon: <Award className="w-8 h-8" />,
                 color: "from-blue-500 to-yellow-500"
               },
               {
-                title: "Kids Special",
-                description: "Fun and engaging lessons designed specifically for young learners",
+                title: "Kids Program",
+                description: "Fun lessons designed for young learners",
                 features: ["Playful learning", "Simple songs", "Rhythm games", "Creative expression"],
                 icon: <Heart className="w-8 h-8" />,
                 color: "from-yellow-300 to-blue-500"
@@ -327,7 +322,7 @@ function App() {
           
           <div className="text-center mt-12">
             <button className="bg-gradient-to-r from-blue-500 to-yellow-500 text-white px-12 py-4 rounded-full text-xl font-semibold hover:from-blue-600 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-xl">
-              Book Your Free Trial Class
+              Book Free Trial
             </button>
           </div>
         </div>
@@ -337,9 +332,9 @@ function App() {
       <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6 font-playfair">Get In Touch</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6 font-playfair">Contact Us</h2>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-yellow-500 mx-auto mb-8"></div>
-            <p className="text-xl text-blue-700">Ready to begin your musical journey? We'd love to hear from you!</p>
+            <p className="text-xl text-blue-700">Ready to start your musical journey? Let's connect!</p>
           </div>
           
           <div className="grid md:grid-cols-2 gap-12">
@@ -378,13 +373,12 @@ function App() {
               </div>
               
               <div className="bg-gradient-to-br from-blue-100 to-yellow-100 p-6 rounded-2xl">
-                <h3 className="text-xl font-semibold text-blue-900 mb-4">Free Trial Class</h3>
+                <h3 className="text-xl font-semibold text-blue-900 mb-4">Free Trial</h3>
                 <p className="text-blue-800 mb-4">
-                  Experience our teaching methodology with a complimentary 30-minute session. 
-                  No commitment required!
+                  Experience our teaching with a free 30-minute session. No commitment required!
                 </p>
                 <button className="bg-gradient-to-r from-blue-500 to-yellow-500 text-white px-6 py-3 rounded-full font-semibold hover:from-blue-600 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105">
-                  Schedule Free Trial
+                  Book Now
                 </button>
               </div>
             </div>
