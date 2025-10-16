@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Music, Users, Award, Phone, Mail, MapPin, Star, Play, BookOpen, Heart, Sparkles } from 'lucide-react';
+import { Blog } from './components/Blog';
+import { BlogAdmin } from './components/BlogAdmin';
 
 function App() {
   const [isVisible, setIsVisible] = useState(false);
+  const [currentView, setCurrentView] = useState<'home' | 'blog' | 'admin'>('home');
 
   useEffect(() => {
     setIsVisible(true);
@@ -12,6 +15,14 @@ function App() {
     const element = document.getElementById(sectionId);
     element?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  if (currentView === 'blog') {
+    return <Blog />;
+  }
+
+  if (currentView === 'admin') {
+    return <BlogAdmin />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-yellow-50 to-blue-100">
@@ -28,10 +39,11 @@ function App() {
               <span className="text-xl font-bold text-blue-800 font-playfair">Krishna Flute Academy</span>
             </div>
             <div className="hidden md:flex space-x-8">
-              <button onClick={() => scrollToSection('about')} className="text-blue-700 hover:text-blue-900 transition-colors">About</button>
-              <button onClick={() => scrollToSection('founder')} className="text-blue-700 hover:text-blue-900 transition-colors">Founder</button>
-              <button onClick={() => scrollToSection('courses')} className="text-blue-700 hover:text-blue-900 transition-colors">Courses</button>
-              <button onClick={() => scrollToSection('contact')} className="text-blue-700 hover:text-blue-900 transition-colors">Contact</button>
+              <button onClick={() => { setCurrentView('home'); setTimeout(() => scrollToSection('about'), 100); }} className="text-blue-700 hover:text-blue-900 transition-colors">About</button>
+              <button onClick={() => { setCurrentView('home'); setTimeout(() => scrollToSection('founder'), 100); }} className="text-blue-700 hover:text-blue-900 transition-colors">Founder</button>
+              <button onClick={() => { setCurrentView('home'); setTimeout(() => scrollToSection('courses'), 100); }} className="text-blue-700 hover:text-blue-900 transition-colors">Courses</button>
+              <button onClick={() => setCurrentView('blog')} className="text-blue-700 hover:text-blue-900 transition-colors">Blog</button>
+              <button onClick={() => { setCurrentView('home'); setTimeout(() => scrollToSection('contact'), 100); }} className="text-blue-700 hover:text-blue-900 transition-colors">Contact</button>
             </div>
             <button className="bg-gradient-to-r from-blue-500 to-yellow-500 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 shadow-lg">
               Book Free Trial
@@ -467,10 +479,11 @@ function App() {
             <div>
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2 text-blue-100">
-                <li><button onClick={() => scrollToSection('about')} className="hover:text-white transition-colors">About Us</button></li>
-                <li><button onClick={() => scrollToSection('courses')} className="hover:text-white transition-colors">Courses</button></li>
-                <li><button onClick={() => scrollToSection('founder')} className="hover:text-white transition-colors">Our Founder</button></li>
-                <li><button onClick={() => scrollToSection('contact')} className="hover:text-white transition-colors">Contact</button></li>
+                <li><button onClick={() => { setCurrentView('home'); setTimeout(() => scrollToSection('about'), 100); }} className="hover:text-white transition-colors">About Us</button></li>
+                <li><button onClick={() => { setCurrentView('home'); setTimeout(() => scrollToSection('courses'), 100); }} className="hover:text-white transition-colors">Courses</button></li>
+                <li><button onClick={() => { setCurrentView('home'); setTimeout(() => scrollToSection('founder'), 100); }} className="hover:text-white transition-colors">Our Founder</button></li>
+                <li><button onClick={() => setCurrentView('blog')} className="hover:text-white transition-colors">Blog</button></li>
+                <li><button onClick={() => { setCurrentView('home'); setTimeout(() => scrollToSection('contact'), 100); }} className="hover:text-white transition-colors">Contact</button></li>
               </ul>
             </div>
             
