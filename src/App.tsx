@@ -1,38 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Music, Users, Award, Phone, Mail, MapPin, Star, Play, BookOpen, Heart, Sparkles, Facebook, Instagram, Youtube, MessageSquare, ChevronRight } from 'lucide-react';
 
-// 🔑 Click-to-Enter Loader Component
-const ClickLoader = ({ onEnter }) => {
-    const LOGO_IMAGE_PATH = "/image.png"; 
 
-    const handleLogoClick = () => {
-        const audio = document.getElementById('bg-audio');
-        if (audio instanceof HTMLAudioElement) {
-            audio.muted = false; 
-            audio.play().then(() => {
-                console.log("Audio playback successful.");
-            }).catch(error => {
-                console.warn("Audio playback failed (check file format or browser policy).", error);
-            });
-        }
-        onEnter(); 
-    };
-
-    return (
-        <div 
-            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/95 cursor-pointer transition-opacity duration-500"
-            onClick={handleLogoClick}
-        >
-            <img 
-                src={LOGO_IMAGE_PATH} 
-                alt="Krishna Flute Academy Logo" 
-                className="w-32 h-40 object-contain animate-pulse-slow mb-4"
-            />
-            <h2 className="text-2xl font-semibold text-blue-800">Click to Begin Your Journey</h2>
-            <p className="text-sm text-gray-500 mt-2">Audio will play automatically on click.</p>
-        </div>
-    );
-}; // ✅ FIXED: Added missing closing brace and semicolon
+    
 
 // ⭐️ NEW: Blog Section Component
 const BlogSection = ({ visible }) => {
@@ -40,34 +10,34 @@ const BlogSection = ({ visible }) => {
         {
             title: "The Art of Bansuri Breath Control",
             summary: "Discover the essential techniques that professional flutists use to achieve continuous, soulful sound.",
-            image: "/blog_post_1.jpg",
+            image: `${import.meta.env.BASE_URL}blog_post_1.jpg`,
             link: "#"
         },
         {
             title: "Why Learn Classical Indian Flute?",
             summary: "Explore the mental and spiritual benefits of studying Indian classical music and the therapeutic power of the flute.",
-            image: "/blog_post_2.jpg",
+            image: `${import.meta.env.BASE_URL}blog_post_2.jpg`,
             link: "#"
         },
         {
             title: "Flute Care: Keeping Your Bansuri Tuned",
             summary: "A practical guide to bamboo flute maintenance, humidity control, and ensuring perfect pitch for a lifetime.",
-            image: "/blog_post_3.jpg",
+            // ✅ FIXED: Changed single quotes to backticks
+            image: `${import.meta.env.BASE_URL}blog_post_3.jpg`,
             link: "#"
         },
     ];
 
     return (
-        <section id="blog" className="py-20 px-4 sm:px-6 lg:px-8 bg-blue-50/50">
+        <section id="blog" className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-blue-50/50">
             <div className="max-w-7xl mx-auto">
                 <div className={`text-center mb-16 transform transition-all duration-1000 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
-                    <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6">Our Latest Insights</h2>
-                    <div className="w-24 h-1 bg-gradient-to-r from-yellow-500 to-blue-500 mx-auto mb-8"></div>
-                    <p className="text-xl text-blue-700 max-w-3xl mx-auto">
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900 mb-4 md:mb-6">Our Latest Insights</h2>
+                    <div className="w-20 h-1 bg-gradient-to-r from-yellow-500 to-blue-500 mx-auto mb-6 md:mb-8"></div>
+                    <p className="text-lg md:text-xl text-blue-700 max-w-3xl mx-auto">
                         In-depth articles and guides from our master musicians.
                     </p>
                 </div>
-
                 <div className="grid md:grid-cols-3 gap-10">
                     {blogPosts.map((post, index) => (
                         <a 
@@ -85,8 +55,8 @@ const BlogSection = ({ visible }) => {
                                 <div className="absolute inset-0 bg-blue-900/10 group-hover:bg-blue-900/20 transition-all"></div>
                             </div>
                             <div className="p-6 space-y-3">
-                                <h3 className="text-2xl font-bold text-blue-900 group-hover:text-blue-700 transition-colors">{post.title}</h3>
-                                <p className="text-blue-800 leading-relaxed text-sm">{post.summary}</p>
+                                <h3 className="text-xl lg:text-2xl font-bold text-blue-900 group-hover:text-blue-700 transition-colors">{post.title}</h3>
+                                <p className="text-sm md:text-base text-blue-800 leading-relaxed">{post.summary}</p>
                                 <span className="flex items-center space-x-2 text-sm font-semibold text-yellow-600 group-hover:text-yellow-700 transition-colors pt-2">
                                     <span>Read Article</span>
                                     <ChevronRight className="w-4 h-4" />
@@ -95,7 +65,6 @@ const BlogSection = ({ visible }) => {
                         </a>
                     ))}
                 </div>
-                
                 <div className="text-center mt-12">
                     <button 
                         onClick={() => window.open(blogPosts[0].link, '_blank')}
@@ -107,15 +76,14 @@ const BlogSection = ({ visible }) => {
             </div>
         </section>
     );
-}; // ✅ FIXED: Added missing closing brace and semicolon
+};
 
 
 function App() {
     const [scrolled, setScrolled] = useState(false);
     const [visibleSections, setVisibleSections] = useState({});
-    const [isSiteReady, setIsSiteReady] = useState(false);
     
-    // State for Form Inputs (for WhatsApp submission)
+    
     const [formName, setFormName] = useState('');
     const [formEmail, setFormEmail] = useState('');
     const [formPhone, setFormPhone] = useState('');
@@ -142,7 +110,7 @@ function App() {
         };
         
         window.addEventListener('scroll', handleScroll);
-        handleScroll(); // Initial check
+        handleScroll();
         
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -182,18 +150,19 @@ Hello Krishna Flute Academy, I have an inquiry!
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-yellow-50 to-blue-100">
             
-            {!isSiteReady && <ClickLoader onEnter={() => setIsSiteReady(true)} />}
+            
 
-            {isSiteReady && (
+            
             <div>
-                <audio id="bg-audio" src="/flute_audio.mp3" loop muted={false} style={{ display: 'none' }}></audio>
+                <audio id="bg-audio" src={`${import.meta.env.BASE_URL}flute_audio.mp3`} loop muted={false} style={{ display: 'none' }}></audio>
 
                 <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-lg py-2' : 'bg-white/90 backdrop-blur-md shadow-lg py-3'}`}>
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between items-center h-16">
                             <div className="flex items-center space-x-3">
                                 <img 
-                                    src="/image.png" 
+                                    // ✅ FIXED: Hardcoded path updated
+                                    src={`${import.meta.env.BASE_URL}image.png`} 
                                     alt="Krishna Flute Academy Logo" 
                                     className="h-12 w-12 object-contain"
                                 />
@@ -226,10 +195,10 @@ Hello Krishna Flute Academy, I have an inquiry!
                     </div>
                 </nav>
 
-                <section className="relative pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
-                    <div 
-                        className="relative z-0 w-full h-[450px] md:h-[550px] overflow-hidden bg-cover bg-center bg-no-repeat"
-                        style={{ backgroundImage: 'url(/Toppic.jpg)' }} 
+                    <section className="relative pt-16 md:pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
+                    <div
+                        className="relative z-0 w-full h-[350px] sm:h-[450px] md:h-[550px] overflow-hidden bg-cover bg-center bg-no-repeat"
+                        style={{ backgroundImage: `url(${import.meta.env.BASE_URL}Toppic.jpg)` }}
                     >
                     </div>
                 </section>
@@ -289,7 +258,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                             <div className={`relative transform transition-all duration-1000 delay-200 ${visibleSections['founder'] ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0'}`}>
                                 <div className="relative overflow-hidden rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105">
                                     <img 
-                                        src="/guru.jpg" 
+                                        src={`${import.meta.env.BASE_URL}guru.jpg`}
                                         alt="Founder of Krishna Flute Academy" 
                                         className="w-full h-96 object-cover object-center"
                                     />
@@ -353,7 +322,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                         <div className="flex flex-col md:flex-row items-center justify-center gap-10">
                             <div className={`md:w-1/2 transform transition-all duration-1000 delay-200 ${visibleSections['flutes'] ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0'}`}>
                                 <img 
-                                    src="/flutes_custom.jpg" 
+                                    src={`${import.meta.env.BASE_URL}flutes_custom.jpg`} 
                                     alt="Handcrafted Flutes" 
                                     className="w-full rounded-xl shadow-2xl"
                                 />
@@ -489,8 +458,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                                     </div>
                                     <div>
                                         <h3 className="text-xl font-semibold text-blue-900 mb-2">Phone</h3>
-                                        <p className="text-blue-700">+91 98765 43210</p>
-                                        <p className="text-blue-700">+91 87654 32109</p>
+                                        <p className="text-blue-700">+91 98369 52545</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start space-x-4 transform transition-all duration-300 hover:translate-x-2">
@@ -607,7 +575,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                             <div>
                                 <div className="flex items-center space-x-3 mb-4">
                                     <img 
-                                        src="/image.png" 
+                                        src={`${import.meta.env.BASE_URL}image.png`}
                                         alt="Krishna Flute Academy" 
                                         className="h-10 w-10 object-contain"
                                     />
@@ -653,13 +621,13 @@ Hello Krishna Flute Academy, I have an inquiry!
                     href={`${baseWhatsappUrl}${encodeURIComponent(defaultInquiryMessage)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="fixed bottom-6 right-6 z-50 p-4 bg-green-500 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-10 hover:bg-green-600"
+                    className="fixed bottom-6 right-6 z-50 p-4 bg-green-500 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 hover:bg-green-600"
                     aria-label="Chat with us on WhatsApp"
                 >
                     <MessageSquare className="w-7 h-7 text-white" />
                 </a>
             </div>
-            )}
+            
         </div>
     );
 }
