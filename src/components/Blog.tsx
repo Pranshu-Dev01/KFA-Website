@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, User, Eye, Tag, ArrowLeft, Clock } from 'lucide-react';
+import { Calendar, User, Eye, Tag, ArrowLeft, Home } from 'lucide-react';
 import { supabase, BlogPost } from '../lib/supabase';
 
 export const Blog: React.FC = () => {
@@ -151,6 +151,17 @@ export const Blog: React.FC = () => {
   return (
     <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        {/* Navigation Header */}
+        <div className="mb-8">
+          <button
+            onClick={() => window.location.reload()}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Home className="w-5 h-5" />
+            <span>Back to Home</span>
+          </button>
+        </div>
+
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6">
             Our Blog
