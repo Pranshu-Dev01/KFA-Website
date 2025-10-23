@@ -273,6 +273,7 @@ Hello Krishna Flute Academy, I have an inquiry!
         )
     );
 
+<<<<<<< HEAD
     const renderHomeView = () => (
         <div className="overflow-x-hidden">
             {/* Navigation */}
@@ -286,6 +287,23 @@ Hello Krishna Flute Academy, I have an inquiry!
                                 className="h-10 w-10 md:h-12 md:w-12 object-contain"
                             />
                             <span className="text-base md:text-lg font-bold text-blue-900">Krishna Flute Academy</span>
+=======
+                    <section className="relative pt-16 md:pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
+    <div
+        className="relative z-0 w-full h-[200px] sm:h-[350px] md:h-[450px] lg:h-[550px] overflow-hidden bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: url(${import.meta.env.BASE_URL}Toppic.jpg) }}
+    >
+    </div>
+</section>
+
+                <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
+
+                <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/50">
+                    <div className="max-w-6xl mx-auto">
+                        <div className={`text-center mb-16 transform transition-all duration-1000 ${visibleSections['about'] ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+                            <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6">Why Choose Us</h2>
+                            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-yellow-500 mx-auto mb-8"></div>
+>>>>>>> 858a09ba28f4d0ad2e2a2e49016d565706ae9ee7
                         </div>
                         
                         
