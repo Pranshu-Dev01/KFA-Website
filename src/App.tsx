@@ -364,35 +364,13 @@ Hello Krishna Flute Academy, I have an inquiry!
 {/* Full Width Carousel - No Edge Cutting */}
 
 {/* Hero Section - Professional Responsive Approach */}
-<section className="relative pt-16 md:pt-20 overflow-hidden">
-  {/* Container with proper constraints */}
-  <div className="w-full max-w-[100vw] overflow-hidden">
-    <div 
-      className="w-full h-[50vh] min-h-[400px] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] relative bg-cover bg-center bg-no-repeat mx-auto"
-      style={{
-        backgroundImage: `url('${import.meta.env.BASE_URL}Toppic.jpg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center'
-      }}
-    >
-      {/* Dark overlay for better text readability */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        {/* Content container with proper padding */}
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-white">
-            
-            
-            
-            
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+<section className="relative pt-16 md:pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
+                    <div
+    className="relative z-0 w-full h-[350px] sm:h-[450px] md:h-[550px] overflow-hidden bg-cover bg-center bg-no-repeat"
+    style={{ backgroundImage: `url(${import.meta.env.BASE_URL}Toppic.jpg)` }} // <-- FIXED
+>
+</div>
+                </section>
 
             {/* About Section */}
             <section id="about" className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-white/50">
