@@ -9,7 +9,7 @@ import "react-responsive-carousel/lib/styles/carousel.min.css";
 const heroImages = [
     `${import.meta.env.BASE_URL}Toppic.jpg`,
     `${import.meta.env.BASE_URL}hero-image-1.jpg`, // Add your second image
-    //`${import.meta.env.BASE_URL}hero3.jpg`, // Add your third image
+    `${import.meta.env.BASE_URL}hero-image-2.jpg`, // Add your third image
     // Add more images as needed
 ];
 // Blog Section Component
