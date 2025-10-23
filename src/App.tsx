@@ -196,12 +196,12 @@ Hello Krishna Flute Academy, I have an inquiry!
                 </nav>
 
                     <section className="relative pt-16 md:pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
-                    <div
-                        className="relative z-0 w-full h-[350px] sm:h-[450px] md:h-[550px] overflow-hidden bg-cover bg-center bg-no-repeat"
-                        style={{ backgroundImage: `url(${import.meta.env.BASE_URL}Toppic.jpg)` }}
-                    >
-                    </div>
-                </section>
+    <div
+        className="relative z-0 w-full h-[200px] sm:h-[350px] md:h-[450px] lg:h-[550px] overflow-hidden bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: url(${import.meta.env.BASE_URL}Toppic.jpg) }}
+    >
+    </div>
+</section>
 
                 <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
 
