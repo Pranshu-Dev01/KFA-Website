@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';;
+import { useState, useEffect } from 'react';
 import { Music, Download, Users, Award, Phone, Mail, MapPin, Star, Play, BookOpen, Heart, Sparkles, Facebook, Instagram, Youtube, MessageSquare, ChevronRight, Menu, X } from 'lucide-react';
 import { Blog } from './components/Blog';
 import { BlogAdmin } from './components/BlogAdmin';
 import { supabase, BlogPost } from './lib/supabase';
-import { Carousel } from 'react-responsive-carousel'; // <-- Import Carousel
+import { Carousel } from 'react-responsive-carousel';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
-
 
 // Blog Section Component
 const BlogSection = ({ 
@@ -225,61 +224,13 @@ Hello Krishna Flute Academy, I have an inquiry!
         setCurrentView('home');
     };
 
-    const renderCurrentView = () => {
-        switch (currentView) {
-            case 'blog':
-                return <Blog />;
-            case 'admin':
-                return <BlogAdmin />;
-            default:
-                return renderHomeView();
-        }
-    };
-
-    const renderAdminLoginModal = () => (
-        showAdminLogin && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-6 w-96 max-w-md mx-4 shadow-2xl">
-                    <h3 className="text-lg font-semibold text-blue-900 mb-4">Admin Access</h3>
-                    <p className="text-sm text-gray-600 mb-4">Enter admin password to access blog management</p>
-                    <input
-                        type="password"
-                        value={adminPassword}
-                        onChange={(e) => setAdminPassword(e.target.value)}
-                        placeholder="Enter admin password"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-                        onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
-                        autoFocus
-                    />
-                    <div className="flex space-x-3">
-                        <button
-                            onClick={handleAdminLogin}
-                            className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
-                        >
-                            Login
-                        </button>
-                        <button
-                            onClick={() => {
-                                setShowAdminLogin(false);
-                                setAdminPassword('');
-                            }}
-                            className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-md hover:bg-gray-400 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )
-    );
-
-<<<<<<< HEAD
     const renderHomeView = () => (
         <div className="overflow-x-hidden">
             {/* Navigation */}
             <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-lg py-2' : 'bg-white/90 backdrop-blur-md shadow-lg py-3'}`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
+                        {/* Logo Section - Left */}
                         <div className="flex items-center space-x-3">
                             <img 
                                 src={`${import.meta.env.BASE_URL}image.png`} 
@@ -287,37 +238,21 @@ Hello Krishna Flute Academy, I have an inquiry!
                                 className="h-10 w-10 md:h-12 md:w-12 object-contain"
                             />
                             <span className="text-base md:text-lg font-bold text-blue-900">Krishna Flute Academy</span>
-=======
-                    <section className="relative pt-16 md:pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
-    <div
-        className="relative z-0 w-full h-[200px] sm:h-[350px] md:h-[450px] lg:h-[550px] overflow-hidden bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: url(${import.meta.env.BASE_URL}Toppic.jpg) }}
-    >
-    </div>
-</section>
-
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
-
-                <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/50">
-                    <div className="max-w-6xl mx-auto">
-                        <div className={`text-center mb-16 transform transition-all duration-1000 ${visibleSections['about'] ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
-                            <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6">Why Choose Us</h2>
-                            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-yellow-500 mx-auto mb-8"></div>
->>>>>>> 858a09ba28f4d0ad2e2a2e49016d565706ae9ee7
                         </div>
-                        
-                        
-                        {/* Desktop Menu */}
-                        <div className="hidden md:flex space-x-6 lg:space-x-8">
-                            <button onClick={() => scrollToSection('about')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base">About</button>
-                            <button onClick={() => scrollToSection('founder')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base">Founder</button>
-                            <button onClick={() => scrollToSection('courses')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base">Courses</button>
-                            <button onClick={() => scrollToSection('gallery')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base">Gallery</button>
-                            <button onClick={() => setCurrentView('blog')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base">Blog</button>
-                            <button onClick={() => scrollToSection('contact')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base">Contact</button>
+
+                        {/* Desktop Menu - Center */}
+                        <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
+                            <button onClick={() => scrollToSection('about')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base font-medium">About</button>
+                            <button onClick={() => scrollToSection('founder')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base font-medium">Founder</button>
+                            <button onClick={() => scrollToSection('courses')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base font-medium">Courses</button>
+                            <button onClick={() => scrollToSection('gallery')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base font-medium">Gallery</button>
+                            <button onClick={() => setCurrentView('blog')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base font-medium">Blog</button>
+                            <button onClick={() => scrollToSection('contact')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base font-medium">Contact</button>
                         </div>
-                        
+
+                        {/* Right Section - Social Icons & Menu */}
                         <div className="flex items-center space-x-3 md:space-x-4">
+                            {/* Social Icons */}
                             <div className="hidden sm:flex items-center space-x-2">
                                 <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="w-8 h-8 md:w-9 md:h-9 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-all duration-300 transform hover:scale-110">
                                     <Facebook className="w-4 h-4 md:w-5 md:h-5 text-white" />
@@ -332,15 +267,16 @@ Hello Krishna Flute Academy, I have an inquiry!
                             
                             {/* Mobile Menu Button */}
                             <button 
-                                className="md:hidden p-2"
+                                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
                                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                             >
-                                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                                {mobileMenuOpen ? <X className="w-6 h-6 text-blue-900" /> : <Menu className="w-6 h-6 text-blue-900" />}
                             </button>
 
+                            {/* Admin Section */}
                             {isAdmin && (
                                 <div className="hidden md:flex items-center space-x-2">
-                                    <span className="text-xs text-green-600 font-semibold">Admin</span>
+                                    <span className="text-xs text-green-600 font-semibold bg-green-50 px-2 py-1 rounded">Admin</span>
                                     <button 
                                         onClick={handleAdminLogout}
                                         className="text-xs text-red-600 hover:text-red-800 transition-colors px-2 py-1 rounded hover:bg-red-50"
@@ -352,53 +288,28 @@ Hello Krishna Flute Academy, I have an inquiry!
                             )}
                         </div>
                     </div>
-                    
-                    {/* Mobile Menu */}
-                    {mobileMenuOpen && (
-                        <div className="md:hidden bg-white/95 backdrop-blur-md py-4 px-4 rounded-lg mt-2 shadow-xl">
-                            <div className="flex flex-col space-y-4">
-                                <button onClick={() => scrollToSection('about')} className="text-blue-700 hover:text-blue-900 transition-colors text-left">About</button>
-                                <button onClick={() => scrollToSection('founder')} className="text-blue-700 hover:text-blue-900 transition-colors text-left">Founder</button>
-                                <button onClick={() => scrollToSection('courses')} className="text-blue-700 hover:text-blue-900 transition-colors text-left">Courses</button>
-                                <button onClick={() => scrollToSection('gallery')} className="text-blue-700 hover:text-blue-900 transition-colors text-left">Gallery</button>
-                                <button onClick={() => { setCurrentView('blog'); setMobileMenuOpen(false); }} className="text-blue-700 hover:text-blue-900 transition-colors text-left">Blog</button>
-                                <button onClick={() => scrollToSection('contact')} className="text-blue-700 hover:text-blue-900 transition-colors text-left">Contact</button>
-                                {isAdmin && (
-                                    <div className="pt-4 border-t border-gray-200">
-                                        <span className="text-sm text-green-600 font-semibold">Admin Mode</span>
-                                        <button 
-                                            onClick={handleAdminLogout}
-                                            className="text-sm text-red-600 hover:text-red-800 transition-colors mt-2"
-                                        >
-                                            Logout
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
                 </div>
             </nav>
 
-{/* Full Width Carousel - No Edge Cutting */}
+            {/* Hero Section */}
+            <section className="relative pt-16 md:pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
+                <div className="relative z-0 w-full h-[200px] sm:h-[350px] md:h-[450px] lg:h-[550px] overflow-hidden">
+                    <img 
+                        src={`${import.meta.env.BASE_URL}Toppic.jpg`}
+                        alt="Krishna Flute Academy"
+                        className="w-full h-full object-cover object-center"
+                    />
+                </div>
+            </section>
 
-{/* Hero Section - Professional Responsive Approach */}
-<section className="relative pt-16 md:pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
-    <div className="relative z-0 w-full h-[350px] sm:h-[450px] md:h-[550px] overflow-hidden">
-        <img 
-            src={`${import.meta.env.BASE_URL}Toppic.jpg`}
-            alt="Krishna Flute Academy"
-            className="w-full h-full object-cover object-center"
-        />
-    </div>
-</section>
+            <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
 
             {/* About Section */}
-            <section id="about" className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-white/50">
+            <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/50">
                 <div className="max-w-6xl mx-auto">
-                    <div className={`text-center mb-12 md:mb-16 transform transition-all duration-1000 ${visibleSections['about'] ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
-                        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900 mb-4 md:mb-6">Why Choose Us</h2>
-                        <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-yellow-500 mx-auto mb-6 md:mb-8"></div>
+                    <div className={`text-center mb-16 transform transition-all duration-1000 ${visibleSections['about'] ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+                        <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6">Why Choose Us</h2>
+                        <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-yellow-500 mx-auto mb-8"></div>
                     </div>
                     
                     <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
@@ -551,7 +462,7 @@ Hello Krishna Flute Academy, I have an inquiry!
             {/* Blog Section */}
             <BlogSection visible={visibleSections['blog']} posts={recentBlogPosts} onViewAll={() => setCurrentView('blog')}/>
 
-            {/* Gallery Section - FIXED */}
+            {/* Gallery Section */}
             <section id="gallery" className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-white/50 overflow-hidden">
                 <div className="max-w-7xl mx-auto">
                     <div className={`text-center mb-12 md:mb-16 transform transition-all duration-1000 ${visibleSections['gallery'] ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
@@ -669,23 +580,11 @@ Hello Krishna Flute Academy, I have an inquiry!
                             aria-label="Download our brochure to learn more"
                         >
                             Download Brochure 
-                            {/* Optional: Add a small download icon or arrow */}
-                            {/* Ensure Download is imported from lucide-react */}
                             <Download className="w-4 h-4 ml-2 opacity-70 group-hover:opacity-100 transition-opacity" />
-                            {/* Or use an arrow: */}
-                            {/* <ArrowRight className="w-4 h-4 ml-2 opacity-70 group-hover:opacity-100 transition-opacity" /> */}
                         </a>
-                        </div>
+                    </div>
                 </div>
-                
             </section>
-            <div className={`space-y-4 md:space-y-6 ...`}>
-    
-
-   
-    
-
-</div>
 
             {/* Contact Section */}
             <section id="contact" className="py-16 md:py-20 px-4 sm:px-6 lg:px-8">
@@ -863,18 +762,64 @@ Hello Krishna Flute Academy, I have an inquiry!
                 </div>
             </footer>
             
-            
+            {/* Download Brochure Button */}
             <a 
-  href={`${import.meta.env.BASE_URL}KFA-Brochure.pdf`}
-  download="Krishna-Flute-Academy-Brochure.pdf"
-  className="fixed bottom-12 right-6 z-50 p-4 bg-blue-700 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 hover:bg-blue-800"
-  aria-label="Download our brochure"
->
-  {/* You'll need to import the Download icon from lucide-react */}
-  {/* import { ..., Download } from 'lucide-react'; */}
-  <Download className="w-7 h-7 text-white" />
-</a>
+                href={`${import.meta.env.BASE_URL}KFA-Brochure.pdf`}
+                download="Krishna-Flute-Academy-Brochure.pdf"
+                className="fixed bottom-12 right-6 z-50 p-4 bg-blue-700 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 hover:bg-blue-800"
+                aria-label="Download our brochure"
+            >
+                <Download className="w-7 h-7 text-white" />
+            </a>
         </div>
+    );
+
+    const renderCurrentView = () => {
+        switch (currentView) {
+            case 'blog':
+                return <Blog />;
+            case 'admin':
+                return <BlogAdmin />;
+            default:
+                return renderHomeView();
+        }
+    };
+
+    const renderAdminLoginModal = () => (
+        showAdminLogin && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 w-96 max-w-md mx-4 shadow-2xl">
+                    <h3 className="text-lg font-semibold text-blue-900 mb-4">Admin Access</h3>
+                    <p className="text-sm text-gray-600 mb-4">Enter admin password to access blog management</p>
+                    <input
+                        type="password"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        placeholder="Enter admin password"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+                        onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
+                        autoFocus
+                    />
+                    <div className="flex space-x-3">
+                        <button
+                            onClick={handleAdminLogin}
+                            className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                            Login
+                        </button>
+                        <button
+                            onClick={() => {
+                                setShowAdminLogin(false);
+                                setAdminPassword('');
+                            }}
+                            className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-md hover:bg-gray-400 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )
     );
 
     return (
