@@ -393,7 +393,6 @@ Hello Krishna Flute Academy, I have an inquiry!
 )}
 
             {/* Hero Section - Carousel */}
- {/* Hero Section - Carousel */}
 <section className="relative pt-16 md:pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
     <Carousel
         autoPlay={true}
@@ -404,12 +403,70 @@ Hello Krishna Flute Academy, I have an inquiry!
         className="w-full"
     >
         {heroImages.map((imageUrl, index) => (
-            <div key={index} className="w-full h-[350px] sm:h-[450px] md:h-[550px]">
+            <div key={index} className="relative w-full h-[350px] sm:h-[450px] md:h-[550px]">
                 <img
                     src={imageUrl}
                     alt={`Hero Slide ${index + 1}`}
                     className="w-full h-full object-cover"
                 />
+
+                {/* Semi-transparent black overlay */}
+                <div className="absolute inset-0 bg-black/40"></div>
+
+                {/* --- Text Overlay for slide 0 (Left-aligned) --- */}
+                {index === 0 && (
+                    <div className="absolute inset-0 flex flex-col justify-center items-start text-white p-6 sm:p-12 md:pl-24 font-montserrat z-10">
+                        <div className="space-y-2 md:space-y-4">
+                            <p className="text-xl md:text-2xl font-light tracking-widest uppercase">
+                                LEARN FLUTE
+                            </p>
+                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white uppercase">
+                                KRISHNA FLUTE ACADEMY
+                            </h1>
+                            <p className="text-lg md:text-xl font-medium text-yellow-400">
+                                With Krishna Gopal Bhaumik
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* --- Text Overlay for slide 1 (Left-aligned) --- */}
+                {index === 1 && (
+                    <div className="absolute inset-0 flex flex-col justify-center items-start text-white p-6 sm:p-12 md:pl-24 font-montserrat z-10">
+                        <div className="space-y-2 md:space-y-4">
+                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white uppercase">
+                                LEARN FLUTE
+                            </h1>
+                            <p className="text-2xl md:text-4xl font-light tracking-wide uppercase">
+                                TURN YOUR BREATH<br />INTO TUNES
+                            </p>
+                            <p className="text-lg md:text-xl font-medium text-yellow-400 pt-2">
+                                With Krishna Gopal Bhaumik
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* --- UPDATED Text Overlay for slide 2 (Center-aligned) --- */}
+                {index === 2 && (
+                    // 1. Changed 'items-start' to 'items-center'
+                    // 2. Removed 'md:pl-24' to use uniform padding
+                    <div className="absolute inset-0 flex flex-col justify-center items-center text-white p-6 sm:p-12 font-montserrat z-10">
+                        {/* 3. Added 'text-center' to center-align the text itself */}
+                        <div className="space-y-2 md:space-y-4 text-center">
+                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white uppercase">
+                                LEARN FLUTE
+                            </h1>
+                            <p className="text-2xl md:text-4xl font-light tracking-wide uppercase">
+                                TURN YOUR BREATH INTO TUNES
+                            </p>
+                            <p className="text-lg md:text-xl font-medium text-yellow-400 pt-2">
+                                With Krishna Gopal Bhaumik
+                            </p>
+                        </div>
+                    </div>
+                )}
+                
             </div>
         ))}
     </Carousel>
