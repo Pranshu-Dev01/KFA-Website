@@ -6,6 +6,12 @@ import { supabase, BlogPost } from './lib/supabase';
 import { Carousel } from 'react-responsive-carousel';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 
+const heroImages = [
+    `${import.meta.env.BASE_URL}Toppic.jpg`,
+    `${import.meta.env.BASE_URL}hero-image-1.jpg`, // Add your second image
+    //`${import.meta.env.BASE_URL}hero3.jpg`, // Add your third image
+    // Add more images as needed
+];
 // Blog Section Component
 const BlogSection = ({ 
     visible, 
@@ -290,17 +296,124 @@ Hello Krishna Flute Academy, I have an inquiry!
                     </div>
                 </div>
             </nav>
-
-            {/* Hero Section */}
-            <section className="relative pt-16 md:pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
-                <div className="relative z-0 w-full h-[200px] sm:h-[350px] md:h-[450px] lg:h-[550px] overflow-hidden">
-                    <img 
-                        src={`${import.meta.env.BASE_URL}Toppic.jpg`}
-                        alt="Krishna Flute Academy"
-                        className="w-full h-full object-cover object-center"
-                    />
+            {/* Mobile Menu Overlay */}
+{mobileMenuOpen && (
+    <div className="fixed inset-0 z-50 md:hidden">
+        {/* Backdrop */}
+        <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setMobileMenuOpen(false)}
+        />
+        
+        {/* Mobile Menu Panel */}
+        <div className="absolute top-0 right-0 w-3/4 max-w-sm h-full bg-white shadow-2xl transform transition-transform duration-300">
+            <div className="p-6">
+                {/* Close Button */}
+                <div className="flex justify-end mb-8">
+                    <button
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                    >
+                        <X className="w-6 h-6" />
+                    </button>
                 </div>
-            </section>
+                
+                {/* Mobile Menu Items */}
+                <div className="space-y-6">
+                    <button 
+                        onClick={() => { scrollToSection('about'); setMobileMenuOpen(false); }}
+                        className="block w-full text-left text-lg font-semibold text-blue-900 hover:text-blue-700 transition-colors py-2"
+                    >
+                        About
+                    </button>
+                    <button 
+                        onClick={() => { scrollToSection('founder'); setMobileMenuOpen(false); }}
+                        className="block w-full text-left text-lg font-semibold text-blue-900 hover:text-blue-700 transition-colors py-2"
+                    >
+                        Founder
+                    </button>
+                    <button 
+                        onClick={() => { scrollToSection('courses'); setMobileMenuOpen(false); }}
+                        className="block w-full text-left text-lg font-semibold text-blue-900 hover:text-blue-700 transition-colors py-2"
+                    >
+                        Courses
+                    </button>
+                    <button 
+                        onClick={() => { scrollToSection('gallery'); setMobileMenuOpen(false); }}
+                        className="block w-full text-left text-lg font-semibold text-blue-900 hover:text-blue-700 transition-colors py-2"
+                    >
+                        Gallery
+                    </button>
+                    <button 
+                        onClick={() => { setCurrentView('blog'); setMobileMenuOpen(false); }}
+                        className="block w-full text-left text-lg font-semibold text-blue-900 hover:text-blue-700 transition-colors py-2"
+                    >
+                        Blog
+                    </button>
+                    <button 
+                        onClick={() => { scrollToSection('contact'); setMobileMenuOpen(false); }}
+                        className="block w-full text-left text-lg font-semibold text-blue-900 hover:text-blue-700 transition-colors py-2"
+                    >
+                        Contact
+                    </button>
+                    
+                    {/* Mobile Social Icons */}
+                    <div className="pt-6 border-t border-gray-200">
+                        <div className="flex space-x-4">
+                            <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-all duration-300">
+                                <Facebook className="w-5 h-5 text-white" />
+                            </a>
+                            <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 rounded-full flex items-center justify-center hover:shadow-lg transition-all duration-300">
+                                <Instagram className="w-5 h-5 text-white" />
+                            </a>
+                            <a href={socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-700 transition-all duration-300">
+                                <Youtube className="w-5 h-5 text-white" />
+                            </a>
+                        </div>
+                    </div>
+                    
+                    {/* Admin Section in Mobile Menu */}
+                    {isAdmin && (
+                        <div className="pt-6 border-t border-gray-200">
+                            <div className="space-y-3">
+                                <span className="text-sm text-green-600 font-semibold bg-green-50 px-3 py-1 rounded">Admin</span>
+                                <button 
+                                    onClick={handleAdminLogout}
+                                    className="block w-full text-left text-sm text-red-600 hover:text-red-800 transition-colors px-3 py-2 rounded hover:bg-red-50"
+                                >
+                                    Logout from Admin
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    </div>
+)}
+
+            {/* Hero Section - Carousel */}
+ {/* Hero Section - Carousel */}
+<section className="relative pt-16 md:pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
+    <Carousel
+        autoPlay={true}
+        infiniteLoop={true}
+        showThumbs={false}
+        showStatus={false}
+        interval={5000}
+        className="w-full"
+    >
+        {heroImages.map((imageUrl, index) => (
+            <div key={index} className="w-full h-[350px] sm:h-[450px] md:h-[550px]">
+                <img
+                    src={imageUrl}
+                    alt={`Hero Slide ${index + 1}`}
+                    className="w-full h-full object-cover"
+                />
+            </div>
+        ))}
+    </Carousel>
+</section>
 
             <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
 

@@ -252,7 +252,7 @@ export const BlogAdmin: React.FC = () => {
                     {/* Back to Home Button */}
                     <div className="mb-8">
                          <button
-                            onClick={() => window.location.href = '/'}
+                            onClick={() => window.location.pathname = '/'}
                             className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                          >
                             <Home className="w-5 h-5" />
@@ -487,7 +487,7 @@ export const BlogAdmin: React.FC = () => {
                 {/* Back to Home Button */}
                 <div className="mb-8">
                     <button
-                        onClick={() => window.location.href = '/'}
+                        onClick={() => window.location.pathname = '/'}
                         className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
                         <Home className="w-5 h-5" />
