@@ -3,7 +3,8 @@ import { Music, Download, Users, Award, Phone, Mail, MapPin, Star, Play, BookOpe
 import { Blog } from './components/Blog';
 import { BlogAdmin } from './components/BlogAdmin';
 import { supabase, BlogPost } from './lib/supabase';
-
+import { Carousel } from 'react-responsive-carousel'; // <-- Import Carousel
+import "react-responsive-carousel/lib/styles/carousel.min.css";
 
 
 // Blog Section Component
@@ -117,6 +118,16 @@ function App() {
     const [formPhone, setFormPhone] = useState('');
     const [formCourse, setFormCourse] = useState('Select a course');
     const [formMessage, setFormMessage] = useState('');
+
+    // Define your hero images
+    const heroImages = [
+        `${import.meta.env.BASE_URL}Toppic.jpg`,
+        `${import.meta.env.BASE_URL}hero-image-2.jpg`, // Replace with your image filename
+        `${import.meta.env.BASE_URL}hero-image-3.jpg`,
+        `${import.meta.env.BASE_URL}hero-image-4.jpg`,
+        `${import.meta.env.BASE_URL}hero-image-5.jpg` // Replace with your image filename
+        // Add more image paths as needed
+    ];
 
     useEffect(() => {
         const handleScroll = () => {
@@ -363,15 +374,32 @@ Hello Krishna Flute Academy, I have an inquiry!
 
 {/* Full Width Carousel - No Edge Cutting */}
 
-{/* Hero Section - Professional Responsive Approach */}
 <section className="relative pt-16 md:pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
-    <div className="relative z-0 w-full h-[350px] sm:h-[450px] md:h-[550px] overflow-hidden">
-        <img 
-            src={`${import.meta.env.BASE_URL}Toppic.jpg`}
-            alt="Krishna Flute Academy"
-            className="w-full h-full object-cover object-center"
-        />
+    <Carousel
+        autoPlay={true}      // Start sliding automatically
+        infiniteLoop={true}  // Loop back to the first slide after the last
+        showThumbs={false}   // Hide thumbnail navigation
+        showStatus={false}   // Hide status indicator (e.g., "1 of 3")
+        interval={5000}      // Time between slides in milliseconds (5 seconds)
+        className="w-full"   // Ensure carousel takes full width
+    >
+        {heroImages.map((imageUrl, index) => (
+            // Each child of Carousel is a slide
+            <div key={index} className="relative z-0 w-full h-[350px] sm:h-[450px] md:h-[550px] overflow-hidden"> {/* Maintain your responsive height */}
+                <img
+                    src={imageUrl}
+                    alt={`Hero Slide ${index + 1}`}
+                    className="w-full h-full object-cover" // Use object-cover to fill the slide space
+                />
+                {/* Optional: Add Text/Button Overlay Here */}
+                 <div className="absolute inset-0 flex flex-col items-end justify-center bg-black/30 text-white p-6 md:p-8">
+    <div className="text-right max-w-[80%] md:max-w-[60%]">
+        
     </div>
+</div>
+            </div>
+        ))}
+    </Carousel>
 </section>
 
             {/* About Section */}
