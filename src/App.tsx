@@ -365,12 +365,14 @@ Hello Krishna Flute Academy, I have an inquiry!
 
 {/* Hero Section - Professional Responsive Approach */}
 <section className="relative pt-16 md:pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
-                    <div
-    className="relative z-0 w-full h-[350px] sm:h-[450px] md:h-[550px] overflow-hidden bg-cover bg-center bg-no-repeat"
-    style={{ backgroundImage: `url(${import.meta.env.BASE_URL}Toppic.jpg)` }} // <-- FIXED
->
-</div>
-                </section>
+    <div className="relative z-0 w-full h-[350px] sm:h-[450px] md:h-[550px] overflow-hidden">
+        <img 
+            src={`${import.meta.env.BASE_URL}Toppic.jpg`}
+            alt="Krishna Flute Academy"
+            className="w-full h-full object-cover object-center"
+        />
+    </div>
+</section>
 
             {/* About Section */}
             <section id="about" className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-white/50">
