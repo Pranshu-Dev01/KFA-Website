@@ -426,7 +426,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                 <p className="text-xl md:text-2xl font-light tracking-widest uppercase">
                   LEARN FLUTE
                 </p>
-                <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold uppercase">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold uppercase">
                   KRISHNA FLUTE <br /> ACADEMY
                 </h1>
                 <p className="text-lg md:text-xl font-medium text-yellow-400">
@@ -441,8 +441,8 @@ Hello Krishna Flute Academy, I have an inquiry!
                 <p className="text-xl md:text-2xl font-light tracking-widest uppercase">
                   LEARN FLUTE
                 </p>
-                <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold uppercase">
-                  TURN YOUR <br />BREATH<br /> INTO TUNE
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold uppercase">
+                  TURN YOUR BREATH<br /> INTO TUNE
                 </h1>
                 <p className="text-lg md:text-xl font-medium text-yellow-400">
                   With Krishna Gopal Bhaumik
@@ -456,7 +456,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                 <p className="text-xl md:text-2xl font-light tracking-widest uppercase">
                   LEARN FLUTE
                 </p>
-                <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold uppercase">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold uppercase">
                   From Basics <br />To Advanced
                 </h1>
                 <p className="text-lg md:text-xl font-medium text-yellow-400">
