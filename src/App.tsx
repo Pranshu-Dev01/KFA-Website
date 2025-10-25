@@ -442,7 +442,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                   LEARN FLUTE
                 </p>
                 <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold uppercase">
-                  TURN YOUR BREATH<br /> INTO TUNE
+                  TURN YOUR <br />BREATH<br /> INTO TUNE
                 </h1>
                 <p className="text-lg md:text-xl font-medium text-yellow-400">
                   With Krishna Gopal Bhaumik
@@ -457,7 +457,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                   LEARN FLUTE
                 </p>
                 <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold uppercase">
-                  From Basics To<br /> Advanced
+                  From Basics <br />To Advanced
                 </h1>
                 <p className="text-lg md:text-xl font-medium text-yellow-400">
                   With Krishna Gopal Bhaumik
@@ -950,7 +950,8 @@ Hello Krishna Flute Academy, I have an inquiry!
             case 'blog':
                 return <Blog />;
             case 'admin':
-                return <BlogAdmin />;
+                // This line passes the function to your BlogAdmin component
+                return <BlogAdmin onBackToHome={() => setCurrentView('home')} />; 
             default:
                 return renderHomeView();
         }
@@ -994,8 +995,8 @@ Hello Krishna Flute Academy, I have an inquiry!
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-yellow-50 to-blue-100 overflow-x-hidden">
-            {renderCurrentView()}
+        <div className="min-h-screen ...">
+            {renderCurrentView()}  {/* It gets *called* here */}
             {renderAdminLoginModal()}
         </div>
     );

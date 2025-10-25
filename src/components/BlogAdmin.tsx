@@ -19,9 +19,13 @@ interface BlogPost {
   tags: string[];
   updated_at: string;
 }
+
+interface BlogAdminProps {
+  onBackToHome: () => void;
+}
 const SUPABASE_BUCKET_NAME = 'blog_images';
 
-export const BlogAdmin: React.FC = () => {
+export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [isEditing, setIsEditing] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -249,16 +253,10 @@ export const BlogAdmin: React.FC = () => {
         return (
             <div className="min-h-screen py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-yellow-50">
                 <div className="max-w-4xl mx-auto">
-                    {/* Back to Home Button */}
-                    <div className="mb-8">
-                         <button
-                            onClick={() => window.location.pathname = '/'}
-                            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                         >
-                            <Home className="w-5 h-5" />
-                            <span>Back to Home</span>
-                         </button>
-                    </div>
+                    // Inside the renderCurrentView function in App.tsx
+                    
+
+   
 
                     {/* Editor Form Card */}
                     <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
@@ -487,7 +485,7 @@ export const BlogAdmin: React.FC = () => {
                 {/* Back to Home Button */}
                 <div className="mb-8">
                     <button
-                        onClick={() => window.location.pathname = '/'}
+                        onClick={onBackToHome}
                         className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
                         <Home className="w-5 h-5" />
