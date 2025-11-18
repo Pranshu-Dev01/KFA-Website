@@ -421,31 +421,30 @@ Hello Krishna Flute Academy, I have an inquiry!
         <div className="absolute inset-0 flex flex-col justify-center items-start text-left text-white p-6 sm:p-12 md:pl-24 font-montserrat z-10">
           <div className="space-y-2 md:space-y-4">
             
-            {/* Slide 1 (UPDATED with smaller mobile fonts) */}
+            {/* Slide 1 */}
             {index === 0 && (
               <>
-                {/* CHANGED: text-lg -> text-base */}
                 <p className="text-base md:text-2xl font-light tracking-widest uppercase">
                   LEARN FLUTE
                 </p>
-                {/* CHANGED: text-3xl -> text-2xl */}
                 <h1 className="text-2xl sm:text-5xl md:text-6xl font-extrabold uppercase">
                   KRISHNA FLUTE <br /> ACADEMY
                 </h1>
-                {/* CHANGED: text-base -> text-sm */}
                 <p className="text-sm md:text-xl font-medium text-yellow-400">
                   With Krishna Gopal Bhaumik
                 </p>
               </>
             )}
 
-            {/* Slide 2 (Extra-small mobile fonts) */}
+            {/* Slide 2 (UPDATED with smallest mobile fonts) */}
             {index === 1 && (
               <>
-                <p className="text-sm md:text-2xl font-light tracking-widest uppercase">
+                {/* CHANGED: text-sm -> text-xs */}
+                <p className="text-xs md:text-2xl font-light tracking-widest uppercase">
                   LEARN FLUTE
                 </p>
-                <h1 className="text-xl sm:text-5xl md:text-6xl font-extrabold uppercase">
+                {/* CHANGED: text-xl -> text-lg */}
+                <h1 className="text-lg sm:text-5xl md:text-6xl font-extrabold uppercase">
                   TURN YOUR BREATH<br /> INTO TUNES
                 </h1>
                 <p className="text-xs md:text-xl font-medium text-yellow-400">
