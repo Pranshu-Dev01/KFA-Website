@@ -435,19 +435,19 @@ Hello Krishna Flute Academy, I have an inquiry!
               </>
             )}
 
-            {/* Slide 2 (UPDATED with smaller mobile fonts) */}
+            {/* Slide 2 (UPDATED with extra-small mobile fonts) */}
             {index === 1 && (
               <>
-                {/* CHANGED: text-lg -> text-base */}
-                <p className="text-base md:text-2xl font-light tracking-widest uppercase">
+                {/* CHANGED: text-base -> text-sm */}
+                <p className="text-sm md:text-2xl font-light tracking-widest uppercase">
                   LEARN FLUTE
                 </p>
-                {/* CHANGED: text-3xl -> text-2xl */}
-                <h1 className="text-2xl sm:text-5xl md:text-6xl font-extrabold uppercase">
-                  TURN YOUR BREATH<br /> INTO TUNES
+                {/* CHANGED: text-2xl -> text-xl */}
+                <h1 className="text-xl sm:text-5xl md:text-6xl font-extrabold uppercase">
+                  TURN YOUR BREATH<br /> INTO TUNE
                 </h1>
-                {/* CHANGED: text-base -> text-sm */}
-                <p className="text-sm md:text-xl font-medium text-yellow-400">
+                {/* CHANGED: text-sm -> text-xs */}
+                <p className="text-xs md:text-xl font-medium text-yellow-400">
                   With Krishna Gopal Bhaumik
                 </p>
               </>
@@ -473,7 +473,6 @@ Hello Krishna Flute Academy, I have an inquiry!
     ))}
   </Carousel>
 </section>
-
 
             <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
 
