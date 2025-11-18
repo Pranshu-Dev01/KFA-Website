@@ -423,28 +423,31 @@ Hello Krishna Flute Academy, I have an inquiry!
             {/* Slide 1 */}
             {index === 0 && (
               <>
-                <p className="text-xl md:text-2xl font-light tracking-widest uppercase">
+                <p className="text-lg md:text-2xl font-light tracking-widest uppercase">
                   LEARN FLUTE
                 </p>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold uppercase">
+                <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold uppercase">
                   KRISHNA FLUTE <br /> ACADEMY
                 </h1>
-                <p className="text-lg md:text-xl font-medium text-yellow-400">
+                <p className="text-base md:text-xl font-medium text-yellow-400">
                   With Krishna Gopal Bhaumik
                 </p>
               </>
             )}
 
-            {/* Slide 2 */}
+            {/* Slide 2 (UPDATED with smaller mobile fonts) */}
             {index === 1 && (
               <>
-                <p className="text-xl md:text-2xl font-light tracking-widest uppercase">
+                {/* CHANGED: text-lg -> text-base */}
+                <p className="text-base md:text-2xl font-light tracking-widest uppercase">
                   LEARN FLUTE
                 </p>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold uppercase">
-                  TURN YOUR BREATH<br /> INTO TUNE
+                {/* CHANGED: text-3xl -> text-2xl */}
+                <h1 className="text-2xl sm:text-5xl md:text-6xl font-extrabold uppercase">
+                  TURN YOUR BREATH<br /> INTO TUNES
                 </h1>
-                <p className="text-lg md:text-xl font-medium text-yellow-400">
+                {/* CHANGED: text-base -> text-sm */}
+                <p className="text-sm md:text-xl font-medium text-yellow-400">
                   With Krishna Gopal Bhaumik
                 </p>
               </>
@@ -453,13 +456,13 @@ Hello Krishna Flute Academy, I have an inquiry!
             {/* Slide 3 */}
             {index === 2 && (
               <>
-                <p className="text-xl md:text-2xl font-light tracking-widest uppercase">
+                <p className="text-lg md:text-2xl font-light tracking-widest uppercase">
                   LEARN FLUTE
                 </p>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold uppercase">
+                <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold uppercase">
                   From Basics <br />To Advanced
                 </h1>
-                <p className="text-lg md:text-xl font-medium text-yellow-400">
+                <p className="text-base md:text-xl font-medium text-yellow-400">
                   With Krishna Gopal Bhaumik
                 </p>
               </>
@@ -470,7 +473,6 @@ Hello Krishna Flute Academy, I have an inquiry!
     ))}
   </Carousel>
 </section>
-
 
 
             <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
