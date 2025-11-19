@@ -135,9 +135,11 @@ export const Blog: React.FC = () => {
               )}
 
               <div 
-    className="prose prose-lg prose-blue max-w-none text-blue-800 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5"
-    dangerouslySetInnerHTML={{ __html: selectedPost.content }} 
-/>
+                className="prose prose-lg prose-blue max-w-none text-blue-800 
+                prose-strong:font-extrabold prose-headings:font-bold 
+                [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5"
+                dangerouslySetInnerHTML={{ __html: selectedPost.content }} 
+            />
             </div>
           </article>
         </div>
