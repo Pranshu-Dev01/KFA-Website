@@ -134,13 +134,10 @@ export const Blog: React.FC = () => {
                 </div>
               )}
 
-              <div className="prose prose-lg max-w-none text-blue-800">
-                {selectedPost.content.split('\n').map((paragraph, index) => (
-                  <p key={index} className="mb-4 leading-relaxed">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
+              <div 
+    className="prose prose-lg prose-blue max-w-none text-blue-800 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5"
+    dangerouslySetInnerHTML={{ __html: selectedPost.content }} 
+/>
             </div>
           </article>
         </div>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Save, X, Eye, EyeOff, Home } from 'lucide-react';
 import { supabase, BlogPost } from '../lib/supabase';
-
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css'; // Import styles
 // Define BlogPost type here if not imported (adjust properties as needed)
 interface BlogPost {
   id: string;
@@ -253,7 +254,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         return (
             <div className="min-h-screen py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-yellow-50">
                 <div className="max-w-4xl mx-auto">
-                    // Inside the renderCurrentView function in App.tsx
+                    
                     
 
    
@@ -321,19 +322,33 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                 />
                             </div>
 
-                            {/* Content */}
-                            <div>
+                            
+                            {/* Content - Replaced Textarea with Rich Text Editor */}
+                            <div className="h-96 pb-12"> {/* Added height and padding-bottom */}
                                 <label htmlFor="postContent" className="block text-sm font-semibold text-blue-900 mb-2">
                                     Content *
                                 </label>
-                                <textarea
-                                    id="postContent"
+                                <ReactQuill
+                                    theme="snow"
                                     value={currentPost.content || ''}
-                                    onChange={(e) => setCurrentPost({ ...currentPost, content: e.target.value })}
-                                    rows={15}
-                                    className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-                                    placeholder="Write your blog post content here. You can use simple formatting like new lines."
-                                    required
+                                    onChange={(content) => setCurrentPost({ ...currentPost, content })}
+                                    className="h-full bg-white rounded-lg"
+                                    modules={{
+                                        toolbar: [
+                                            [{ 'header': [1, 2, 3, false] }],
+                                            ['bold', 'italic', 'underline', 'strike'],
+                                            
+                                            // 👇 ADDED: Color and Background Color pickers
+                                            [{ 'color': [] }, { 'background': [] }], 
+                                            
+                                            // 👇 ADDED: Text Alignment options
+                                            [{ 'align': [] }],
+
+                                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                            ['link', 'blockquote'],
+                                            ['clean']
+                                        ],
+                                    }}
                                 />
                             </div>
 
