@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Music, Download, Users, Award, Phone, Mail, MapPin, Star, Play, BookOpen, Heart, Sparkles, Facebook, Instagram, Youtube, MessageSquare, ChevronRight, Menu, X } from 'lucide-react';
+import { Music, Download, Users, Award, Phone, Mail, MapPin, Star, Play, BookOpen, Heart, Sparkles, Facebook, Instagram, Youtube, MessageSquare, ChevronRight, Menu, X, Lock } from 'lucide-react';
 import { Blog } from './components/Blog';
 import { BlogAdmin } from './components/BlogAdmin';
 import { supabase, BlogPost } from './lib/supabase';
@@ -968,6 +968,15 @@ Hello Krishna Flute Academy, I have an inquiry!
                     </div>
                     <div className="border-t border-blue-700 mt-8 pt-8 text-center text-blue-200 text-sm md:text-base">
                         <p>© 2025 Krishna Flute Academy. All rights reserved. | Designed with love for music lovers</p>
+
+                        {/* 👇 Hidden Admin Button for Mobile/Desktop */}
+                        <button 
+                            onClick={() => setShowAdminLogin(true)}
+                            className="p-1 text-blue-800 hover:text-blue-400 transition-colors opacity-50 hover:opacity-100"
+                            aria-label="Admin Login"
+                        >
+                            <Lock className="w-4 h-4" />
+                        </button>
                     </div>
                 </div>
             </footer>

@@ -62,6 +62,14 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     const [inquiries, setInquiries] = useState<Inquiry[]>([]);
     const [loadingInquiries, setLoadingInquiries] = useState(true);
 
+    // Auto-save draft to Local Storage
+    useEffect(() => {
+        if (!currentPost.id && (currentPost.title || currentPost.content)) {
+            const draftData = { ...currentPost };
+            localStorage.setItem('kfa_blog_draft', JSON.stringify(draftData));
+        }
+    }, [currentPost]);
+
     // --- Effects ---
     useEffect(() => {
         fetchAllPosts();
@@ -107,7 +115,6 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     };
 
     // --- Helper Functions (Blog Logic) ---
-    // (Keeping your existing helpers exactly as they were)
     
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -137,11 +144,17 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     };
 
     const handleAddTag = () => {
-        const trimmedTag = tagInput.trim();
-        if (trimmedTag && !currentPost.tags?.includes(trimmedTag)) {
-            setCurrentPost(prev => ({ ...prev, tags: [...(prev.tags || []), trimmedTag] }));
-            setTagInput('');
+        if (!tagInput.trim()) return;
+        const newTags = tagInput.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+        const uniqueNewTags = newTags.filter(tag => !currentPost.tags?.includes(tag));
+
+        if (uniqueNewTags.length > 0) {
+            setCurrentPost(prev => ({
+                ...prev,
+                tags: [...(prev.tags || []), ...uniqueNewTags]
+            }));
         }
+        setTagInput('');
     };
 
     const handleRemoveTag = (tagToRemove: string) => {
@@ -187,6 +200,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
             if (error) throw error;
 
             await fetchAllPosts();
+            localStorage.removeItem('kfa_blog_draft'); // Clear draft on success
             handleCancel();
             alert('Post saved successfully!');
         } catch (error: any) {
@@ -218,6 +232,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     };
 
     const handleCancel = () => {
+        localStorage.removeItem('kfa_blog_draft');
         setCurrentPost({
             title: '', slug: '', content: '', excerpt: '', featured_image: '',
             author_name: 'Krishna Flute Academy', author_email: '', published: false, tags: []
@@ -264,7 +279,14 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                 {(imageFile || currentPost.featured_image) && (<div className="mt-4 relative w-full max-w-sm"><img src={imageFile ? URL.createObjectURL(imageFile) : (currentPost.featured_image || '')} alt="Preview" className="w-full h-auto rounded-lg shadow-md object-cover" /><button type="button" onClick={handleRemoveImage} disabled={loading} className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-black/80 transition-colors"><X className="w-4 h-4" /></button></div>)}
                             </div>
                             <div><label className="block text-sm font-semibold text-blue-900 mb-2">Author</label><input type="text" value={currentPost.author_name || ''} onChange={(e) => setCurrentPost({ ...currentPost, author_name: e.target.value })} className="w-full px-4 py-3 border border-blue-200 rounded-lg" /></div>
-                            <div><label className="block text-sm font-semibold text-blue-900 mb-2">Tags</label><div className="flex items-center space-x-2 mb-3"><input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyPress={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }} className="flex-1 px-4 py-2 border border-blue-200 rounded-lg" /><button type="button" onClick={handleAddTag} className="p-2 bg-blue-600 text-white rounded-lg"><Plus className="w-5 h-5" /></button></div><div className="flex flex-wrap gap-2">{currentPost.tags?.map((tag, index) => (<span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex items-center space-x-1.5"><span>{tag}</span><button type="button" onClick={() => handleRemoveTag(tag)} className="text-blue-500 hover:text-red-600"><X className="w-3 h-3" /></button></span>))}</div></div>
+                            <div>
+                                <label className="block text-sm font-semibold text-blue-900 mb-2">Tags</label>
+                                <div className="flex items-center space-x-2 mb-3">
+                                    <input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }} className="flex-1 px-4 py-2 border border-blue-200 rounded-lg" placeholder="Add tags separated by commas"/>
+                                    <button type="button" onClick={handleAddTag} className="p-2 bg-blue-600 text-white rounded-lg"><Plus className="w-5 h-5" /></button>
+                                </div>
+                                <div className="flex flex-wrap gap-2">{currentPost.tags?.map((tag, index) => (<span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex items-center space-x-1.5"><span>{tag}</span><button type="button" onClick={() => handleRemoveTag(tag)} className="text-blue-500 hover:text-red-600"><X className="w-3 h-3" /></button></span>))}</div>
+                            </div>
                             <div className="flex items-center space-x-3 pt-4"><button type="button" onClick={() => setCurrentPost(prev => ({ ...prev, published: !prev.published }))} className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${currentPost.published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>{currentPost.published ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}<span>{currentPost.published ? 'Published' : 'Draft'}</span></button></div>
                             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-blue-100"><button onClick={handleSave} disabled={loading} className="w-full sm:w-auto flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 flex items-center justify-center space-x-2"><Save className="w-5 h-5" /><span>{loading ? 'Saving...' : 'Save Post'}</span></button><button type="button" onClick={handleCancel} className="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100">Cancel</button></div>
                         </div>
@@ -292,7 +314,18 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                         <h1 className="text-3xl md:text-4xl font-bold text-blue-900 mb-1 sm:mb-2">Admin Dashboard</h1>
                         <p className="text-base md:text-lg text-blue-700">Manage blog posts and student inquiries</p>
                     </div>
-                    <button onClick={() => { setIsEditing(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="mt-4 sm:mt-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-5 py-2.5 md:px-6 md:py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl text-sm md:text-base">
+                    <button onClick={() => {
+                         const savedDraft = localStorage.getItem('kfa_blog_draft');
+                         if (savedDraft) {
+                             const useDraft = window.confirm("We found an unsaved draft. Resume?");
+                             if (useDraft) setCurrentPost(JSON.parse(savedDraft));
+                             else { localStorage.removeItem('kfa_blog_draft'); setCurrentPost({ title: '', slug: '', content: '', excerpt: '', featured_image: '', author_name: 'Krishna Flute Academy', author_email: '', published: false, tags: [] }); }
+                         } else {
+                             setCurrentPost({ title: '', slug: '', content: '', excerpt: '', featured_image: '', author_name: 'Krishna Flute Academy', author_email: '', published: false, tags: [] });
+                         }
+                         setIsEditing(true); 
+                         window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                    }} className="mt-4 sm:mt-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-5 py-2.5 md:px-6 md:py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl text-sm md:text-base">
                         <Plus className="w-5 h-5" />
                         <span>New Post</span>
                     </button>
