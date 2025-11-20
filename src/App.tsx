@@ -199,19 +199,33 @@ function App() {
     const mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3889.3510000000003!2d77.656832!3d12.885108!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae6ca3e5e5e5e5%3A0x8e5e5e5e5e5e5e5e!2sElectronic%20City%20Phase%201%2C%20Bengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin"; 
     const mapLinkUrl = `https://maps.app.goo.gl/Xumte2BGx8FwLijg8`;
     // 1. Use the 'wa.me' format which is more reliable for mobile apps
+    // Use the 'wa.me' format which is more reliable for mobile apps
     const whatsappNumber = '919836952545';
     const baseWhatsappUrl = `https://wa.me/${whatsappNumber}?text=`;
-    const defaultInquiryMessage = 'Hello Krishna Flute Academy, I am interested in your classes!';
 
     const handleWhatsAppSubmit = async () => {
-        // 1. Track the click in Supabase (Fire and forget - don't wait for it)
+        // 1. Validate simple fields
+        if (!formName || !formPhone) {
+            alert("Please enter your Name and Phone number.");
+            return;
+        }
+
+        // 2. Save the ACTUAL form data to Supabase
+        // We don't use 'await' here so the user isn't delayed (Fire and forget)
         supabase
-            .from('inquiry_analytics')
-            .insert([{ event_type: 'whatsapp_click' }])
+            .from('inquiries')
+            .insert([{ 
+                name: formName, 
+                email: formEmail, 
+                phone: formPhone, 
+                course: formCourse, 
+                message: formMessage 
+            }])
             .then(({ error }) => {
-                if (error) console.error('Analytics error:', error);
+                if (error) console.error('Error saving inquiry:', error);
             });
-            
+
+        // 3. Prepare Message for WhatsApp
         const messageDetails = `
 Hello Krishna Flute Academy, I have an inquiry!
 
@@ -224,8 +238,7 @@ Hello Krishna Flute Academy, I have an inquiry!
 
         const finalWhatsappUrl = `${baseWhatsappUrl}${encodeURIComponent(messageDetails)}`;
         
-        // 2. FIX: Use window.location.href instead of window.open
-        // This forces the browser to hand off the request to the WhatsApp app directly
+        // 4. Open WhatsApp
         window.location.href = finalWhatsappUrl;
     };
 
