@@ -135,9 +135,22 @@ export const Blog: React.FC = () => {
               )}
 
               <div 
-                className="prose prose-lg prose-blue max-w-none text-blue-800 
-                prose-strong:font-extrabold prose-headings:font-bold 
-                [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5"
+                className="prose prose-lg prose-blue max-w-none text-blue-800 font-montserrat
+                
+                /* Bold Text Fixes */
+                [&_strong]:font-extrabold [&_strong]:text-blue-900
+                [&_b]:font-extrabold [&_b]:text-blue-900
+                
+                /* Headings Fixes */
+                [&_h1]:font-extrabold [&_h2]:font-bold [&_h3]:font-bold
+                
+                /* List Layout Fixes */
+                [&>ul]:list-disc [&>ul]:pl-5 
+                [&>ol]:list-decimal [&>ol]:pl-5
+                
+                /* 👇 THIS FIXES THE BLACK NUMBERS/BULLETS */
+                [&_li::marker]:text-blue-900 [&_li::marker]:font-bold"
+                
                 dangerouslySetInnerHTML={{ __html: selectedPost.content }} 
             />
             </div>

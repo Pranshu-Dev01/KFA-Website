@@ -1,32 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Save, X, Eye, EyeOff, Home } from 'lucide-react';
+import { Plus, Edit2, Trash2, Save, X, Eye, EyeOff, Home, MessageSquare } from 'lucide-react';
 import { supabase, BlogPost } from '../lib/supabase';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css'; // Import styles
+
 // Define BlogPost type here if not imported (adjust properties as needed)
 interface BlogPost {
-  id: string;
-  created_at: string;
-  title: string;
-  slug: string;
-  content: string;
-  excerpt: string;
-  featured_image: string | null;
-  author_name: string;
-  author_email: string | null;
-  published: boolean;
-  published_at: string | null;
-  view_count: number;
-  tags: string[];
-  updated_at: string;
+    id: string;
+    created_at: string;
+    title: string;
+    slug: string;
+    content: string;
+    excerpt: string;
+    featured_image: string | null;
+    author_name: string;
+    author_email: string | null;
+    published: boolean;
+    published_at: string | null;
+    view_count: number;
+    tags: string[];
+    updated_at: string;
 }
 
 interface BlogAdminProps {
-  onBackToHome: () => void;
+    onBackToHome: () => void;
 }
 const SUPABASE_BUCKET_NAME = 'blog_images';
 
 export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
+    // ✅ FIXED: State moved INSIDE the component
+    const [whatsappCount, setWhatsappCount] = useState(0);
+    
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [isEditing, setIsEditing] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -41,31 +45,29 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         published: false,
         tags: []
     });
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-        const file = e.target.files[0];
-        setImageFile(file);
-        // Clear any existing URL so the preview updates
-        setCurrentPost(prev => ({ ...prev, featured_image: null }));
-    }
-};
-
-    const handleRemoveImage = () => {
-        setImageFile(null);
-        setCurrentPost(prev => ({ ...prev, featured_image: null }));
-        // Reset the file input field
-        const fileInput = document.getElementById('postImage') as HTMLInputElement;
-        if (fileInput) {
-            fileInput.value = '';
-        }
-    };
     const [tagInput, setTagInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [fetchingPosts, setFetchingPosts] = useState(true);
 
+    // ✅ FIXED: Combined into a single useEffect
     useEffect(() => {
         fetchAllPosts();
+        fetchAnalytics();
     }, []);
+
+    const fetchAnalytics = async () => {
+        try {
+            const { count, error } = await supabase
+                .from('inquiry_analytics')
+                .select('*', { count: 'exact', head: true })
+                .eq('event_type', 'whatsapp_click');
+
+            if (error) throw error;
+            setWhatsappCount(count || 0);
+        } catch (error) {
+            console.error('Error fetching analytics:', error);
+        }
+    };
 
     const fetchAllPosts = async () => {
         setFetchingPosts(true);
@@ -80,7 +82,26 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         } catch (error) {
             console.error('Error fetching posts:', error);
         } finally {
-             setFetchingPosts(false);
+            setFetchingPosts(false);
+        }
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setImageFile(file);
+            // Clear any existing URL so the preview updates
+            setCurrentPost(prev => ({ ...prev, featured_image: null }));
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setImageFile(null);
+        setCurrentPost(prev => ({ ...prev, featured_image: null }));
+        // Reset the file input field
+        const fileInput = document.getElementById('postImage') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.value = '';
         }
     };
 
@@ -122,8 +143,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         }));
     };
 
-    // --- REPLACE your current handleSave with THIS version ---
-      const handleSave = async () => {
+    const handleSave = async () => {
         if (!currentPost.title || !currentPost.content) {
             alert('Title and content are required!');
             return;
@@ -139,73 +159,73 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                 const fileExt = imageFile.name.split('.').pop();
                 const safeFileName = `${Date.now()}-${generateSlug(imageFile.name.replace(`.${fileExt}`, ''))}.${fileExt}`;
 
-                // Upload the file
-                const { error: uploadError } = await supabase.storage
-                    .from(SUPABASE_BUCKET_NAME) // Use your constant
-                    .upload(safeFileName, imageFile, {
-                        cacheControl: '3600',
-                        upsert: false, // Set to true if you want to allow overwriting
-                    });
+                // Upload the file
+                const { error: uploadError } = await supabase.storage
+                    .from(SUPABASE_BUCKET_NAME) // Use your constant
+                    .upload(safeFileName, imageFile, {
+                        cacheControl: '3600',
+                        upsert: false, // Set to true if you want to allow overwriting
+                    });
 
-                if (uploadError) {
-                    throw new Error(`Image Upload Failed: ${uploadError.message}`);
-                }
+                if (uploadError) {
+                    throw new Error(`Image Upload Failed: ${uploadError.message}`);
+                }
 
-                // Get the public URL for the uploaded file
-                const { data: urlData } = supabase.storage
-                    .from(SUPABASE_BUCKET_NAME) // Use your constant
-                    .getPublicUrl(safeFileName);
+                // Get the public URL for the uploaded file
+                const { data: urlData } = supabase.storage
+                    .from(SUPABASE_BUCKET_NAME) // Use your constant
+                    .getPublicUrl(safeFileName);
 
-                if (!urlData || !urlData.publicUrl) {
-                    throw new Error('Could not get public URL for image.');
-                }
+                if (!urlData || !urlData.publicUrl) {
+                    throw new Error('Could not get public URL for image.');
+                }
 
-                imageUrlToSave = urlData.publicUrl; // This is the URL to save in the DB
-            }
+                imageUrlToSave = urlData.publicUrl; // This is the URL to save in the DB
+            }
 
-            // 3. Prepare post data for the database
-            const postData: Partial<BlogPost> = {
-                ...currentPost,
-                featured_image: imageUrlToSave, // Save the new or existing URL
-                slug: currentPost.slug || generateSlug(currentPost.title || ''),
-                published_at: currentPost.published && !currentPost.published_at
-                                ? new Date().toISOString()
-                                : currentPost.published ? currentPost.published_at : null,
-            };
+            // 3. Prepare post data for the database
+            const postData: Partial<BlogPost> = {
+                ...currentPost,
+                featured_image: imageUrlToSave, // Save the new or existing URL
+                slug: currentPost.slug || generateSlug(currentPost.title || ''),
+                published_at: currentPost.published && !currentPost.published_at
+                    ? new Date().toISOString()
+                    : currentPost.published ? currentPost.published_at : null,
+            };
 
-            // 4. Insert or Update the post in the database
-            let error;
+            // 4. Insert or Update the post in the database
+            let error;
 
-            if (currentPost.id) {
-                // Update existing post
-                const { error: updateError } = await supabase
-                    .from('blog_posts')
-                    .update(postData)
-                    .eq('id', currentPost.id);
-                error = updateError;
-            } else {
-                // Create new post
-                delete postData.id;
-                const { error: insertError } = await supabase
-                    .from('blog_posts')
-                    .insert([postData]);
-                error = insertError;
-            }
+            if (currentPost.id) {
+                // Update existing post
+                const { error: updateError } = await supabase
+                    .from('blog_posts')
+                    .update(postData)
+                    .eq('id', currentPost.id);
+                error = updateError;
+            } else {
+                // Create new post
+                delete postData.id;
+                const { error: insertError } = await supabase
+                    .from('blog_posts')
+                    .insert([postData]);
+                error = insertError;
+            }
 
-            if (error) throw error;
+            if (error) throw error;
 
-            // 5. Success: fetch posts and reset form
-            await fetchAllPosts();
-            handleCancel(); // handleCancel should clear the imageFile state too
-            alert('Post saved successfully!');
+            // 5. Success: fetch posts and reset form
+            await fetchAllPosts();
+            handleCancel(); // handleCancel should clear the imageFile state too
+            alert('Post saved successfully!');
 
-        } catch (error: any) {
-            console.error('Error saving post:', error);
-            alert(`Error saving post: ${error.message || 'Please try again.'}`);
-        } finally {
-            setLoading(false);
-        }
- };
+        } catch (error: any) {
+            console.error('Error saving post:', error);
+            alert(`Error saving post: ${error.message || 'Please try again.'}`);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleEdit = (post: BlogPost) => {
         setCurrentPost(post);
@@ -247,6 +267,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         });
         setIsEditing(false);
         setTagInput('');
+        setImageFile(null);
     };
 
     // --- Editor View ---
@@ -254,11 +275,6 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         return (
             <div className="min-h-screen py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-yellow-50">
                 <div className="max-w-4xl mx-auto">
-                    
-                    
-
-   
-
                     {/* Editor Form Card */}
                     <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
                         <div className="flex justify-between items-center mb-6 md:mb-8">
@@ -273,8 +289,8 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
-                        
-                         <div className="space-y-6">
+
+                        <div className="space-y-6">
                             {/* Title */}
                             <div>
                                 <label htmlFor="postTitle" className="block text-sm font-semibold text-blue-900 mb-2">
@@ -322,7 +338,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                 />
                             </div>
 
-                            
+
                             {/* Content - Replaced Textarea with Rich Text Editor */}
                             <div className="h-96 pb-12"> {/* Added height and padding-bottom */}
                                 <label htmlFor="postContent" className="block text-sm font-semibold text-blue-900 mb-2">
@@ -337,14 +353,14 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                         toolbar: [
                                             [{ 'header': [1, 2, 3, false] }],
                                             ['bold', 'italic', 'underline', 'strike'],
-                                            
+
                                             // 👇 ADDED: Color and Background Color pickers
-                                            [{ 'color': [] }, { 'background': [] }], 
-                                            
+                                            [{ 'color': [] }, { 'background': [] }],
+
                                             // 👇 ADDED: Text Alignment options
                                             [{ 'align': [] }],
 
-                                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
                                             ['link', 'blockquote'],
                                             ['clean']
                                         ],
@@ -353,46 +369,46 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                             </div>
 
                             {/* --- UPDATED: Featured Image --- */}
-<div>
-    <label htmlFor="postImage" className="block text-sm font-semibold text-blue-900 mb-2">
-        Featured Image (Optional)
-    </label>
-    
-    {/* 1. This is now a file input */}
-    <input
-        type="file"
-        id="postImage"
-        accept="image/*"
-        onChange={handleFileChange}
-        disabled={loading} // Good to add this
-        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer disabled:opacity-50"
-    />
-    
-    {/* 2. This whole block is new for showing a preview */}
-    {(imageFile || currentPost.featured_image) && (
-        <div className="mt-4 relative w-full max-w-sm">
-            <p className="text-xs text-gray-500 mb-1">Image Preview:</p>
-            <img
-                src={imageFile ? URL.createObjectURL(imageFile) : (currentPost.featured_image || '')}
-                alt="Preview"
-                className="w-full h-auto rounded-lg shadow-md object-cover"
-            />
-            
-            {/* 3. This is the new "Remove Image" button */}
-            <button
-                type="button"
-                onClick={handleRemoveImage}
-                disabled={loading}
-                className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-black/80 transition-colors disabled:opacity-50"
-                aria-label="Remove image"
-            >
-                <X className="w-4 h-4" />
-            </button>
-        </div>
-    )}
-</div>
+                            <div>
+                                <label htmlFor="postImage" className="block text-sm font-semibold text-blue-900 mb-2">
+                                    Featured Image (Optional)
+                                </label>
 
-                             {/* Author Name */}
+                                {/* 1. This is now a file input */}
+                                <input
+                                    type="file"
+                                    id="postImage"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    disabled={loading} // Good to add this
+                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer disabled:opacity-50"
+                                />
+
+                                {/* 2. This whole block is new for showing a preview */}
+                                {(imageFile || currentPost.featured_image) && (
+                                    <div className="mt-4 relative w-full max-w-sm">
+                                        <p className="text-xs text-gray-500 mb-1">Image Preview:</p>
+                                        <img
+                                            src={imageFile ? URL.createObjectURL(imageFile) : (currentPost.featured_image || '')}
+                                            alt="Preview"
+                                            className="w-full h-auto rounded-lg shadow-md object-cover"
+                                        />
+
+                                        {/* 3. This is the new "Remove Image" button */}
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveImage}
+                                            disabled={loading}
+                                            className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-black/80 transition-colors disabled:opacity-50"
+                                            aria-label="Remove image"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Author Name */}
                             <div>
                                 <label htmlFor="postAuthor" className="block text-sm font-semibold text-blue-900 mb-2">
                                     Author Name
@@ -416,7 +432,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                         type="text"
                                         value={tagInput}
                                         onChange={(e) => setTagInput(e.target.value)}
-                                        onKeyPress={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); }}}
+                                        onKeyPress={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }}
                                         className="flex-1 px-4 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                         placeholder="Add a tag and press Enter"
                                     />
@@ -454,11 +470,10 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                 <button
                                     type="button"
                                     onClick={() => setCurrentPost(prev => ({ ...prev, published: !prev.published }))}
-                                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                        currentPost.published
-                                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                            : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                                    }`}
+                                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${currentPost.published
+                                        ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                                        }`}
                                 >
                                     {currentPost.published ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                                     <span>{currentPost.published ? 'Published' : 'Draft'}</span>
@@ -523,6 +538,20 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                     </button>
                 </div>
 
+                {/* Stats Grid - Shows WhatsApp clicks */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                    <div className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 flex items-center space-x-4">
+                        <div className="p-4 bg-green-100 text-green-600 rounded-full">
+                            <MessageSquare className="w-8 h-8" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">WhatsApp Inquiries</p>
+                            <h3 className="text-3xl font-bold text-blue-900">{whatsappCount}</h3>
+                            <p className="text-xs text-green-600 font-medium mt-1">Total Clicks</p>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Posts List */}
                 {fetchingPosts ? (
                     <div className="text-center py-10 text-blue-600">Loading posts...</div>
@@ -544,11 +573,10 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
                                             <h3 className="text-xl md:text-2xl font-bold text-blue-900 leading-tight">{post.title}</h3>
                                             <span
-                                                className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                                                    post.published
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-gray-100 text-gray-800'
-                                                }`}
+                                                className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${post.published
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-gray-100 text-gray-800'
+                                                    }`}
                                             >
                                                 {post.published ? 'Published' : 'Draft'}
                                             </span>
