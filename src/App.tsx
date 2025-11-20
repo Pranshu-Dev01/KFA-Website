@@ -16,11 +16,13 @@ const heroImages = [
 const BlogSection = ({ 
     visible, 
     posts, 
-    onViewAll 
+    onViewAll,
+    onReadPost 
 }: { 
     visible: boolean; 
     posts: BlogPost[]; 
     onViewAll: () => void;
+    onReadPost: (id: string) => void;
 }) => {
     
     const handleViewAllBlog = () => {
@@ -60,8 +62,7 @@ const BlogSection = ({
                     key={post.id}
                     // --- UPDATED ONCLICK HANDLER ---
                     onClick={() => {
-                        onViewAll(); // <--- This switches the view to 'blog'
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        onReadPost(post.id);
                     }}
                     // -------------------------------
                     className={`block bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-[1.03] transition-all duration-500 hover:shadow-2xl group cursor-pointer ${visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
@@ -120,7 +121,7 @@ function App() {
     const [adminPassword, setAdminPassword] = useState('');
     const [showAdminLogin, setShowAdminLogin] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    
+    const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
     const [formName, setFormName] = useState('');
     const [formEmail, setFormEmail] = useState('');
     const [formPhone, setFormPhone] = useState('');
@@ -660,7 +661,16 @@ Hello Krishna Flute Academy, I have an inquiry!
             </section>
 
             {/* Blog Section */}
-            <BlogSection visible={visibleSections['blog']} posts={recentBlogPosts} onViewAll={() => setCurrentView('blog')}/>
+            <BlogSection 
+    visible={visibleSections['blog']} 
+    posts={recentBlogPosts} 
+    onViewAll={() => setCurrentView('blog')}
+    onReadPost={(id) => {
+        setSelectedPostId(id);    // 1. Save the specific Post ID
+        setCurrentView('blog');   // 2. Switch to the Blog view
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // 3. Scroll to top
+    }}
+/>
 
             {/* Gallery Section */}
             <section id="gallery" className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-white/50 overflow-hidden">
@@ -977,10 +987,10 @@ Hello Krishna Flute Academy, I have an inquiry!
     const renderCurrentView = () => {
         switch (currentView) {
             case 'blog':
-                return <Blog />;
+                // Pass the selected ID and a function to clear it when they go back
+                return <Blog initialPostId={selectedPostId} onBack={() => setSelectedPostId(null)} />;
             case 'admin':
-                // This line passes the function to your BlogAdmin component
-                return <BlogAdmin onBackToHome={() => setCurrentView('home')} />; 
+                return <BlogAdmin onBackToHome={() => setCurrentView('home')} />;
             default:
                 return renderHomeView();
         }
