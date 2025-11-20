@@ -197,7 +197,7 @@ function App() {
     };
 
     const mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3889.3510000000003!2d77.656832!3d12.885108!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae6ca3e5e5e5e5%3A0x8e5e5e5e5e5e5e5e!2sElectronic%20City%20Phase%201%2C%20Bengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin"; 
-    const mapLinkUrl = `https://goo.gl/maps/example`;
+    const mapLinkUrl = `https://maps.app.goo.gl/Xumte2BGx8FwLijg8`;
     // 1. Use the 'wa.me' format which is more reliable for mobile apps
     const whatsappNumber = '919836952545';
     const baseWhatsappUrl = `https://wa.me/${whatsappNumber}?text=`;
