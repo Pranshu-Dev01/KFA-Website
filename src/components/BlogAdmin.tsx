@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Save, X, Eye, EyeOff, Home, MessageCircle, Mail, Calendar, BookOpen, Sparkles, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
+import { 
+    Plus, Edit2, Trash2, Save, X, Eye, EyeOff, Home, 
+    MessageCircle, Mail, Calendar, BookOpen, Sparkles, 
+    Link as LinkIcon, Image as ImageIcon, Star, Quote 
+} from 'lucide-react';
 import { supabase, BlogPost } from '../lib/supabase';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -44,6 +48,15 @@ interface Event {
     is_active: boolean;
 }
 
+interface Testimonial {
+    id: string;
+    created_at: string;
+    name: string;
+    message: string;
+    rating: number;
+    location: string;
+}
+
 interface BlogAdminProps {
     onBackToHome: () => void;
 }
@@ -51,10 +64,10 @@ interface BlogAdminProps {
 const SUPABASE_BUCKET_NAME = 'blog_images';
 
 export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
-    // --- STATE MANAGEMENT ---
-    const [activeTab, setActiveTab] = useState<'blog' | 'events'>('blog');
+    // --- STATE ---
+    const [activeTab, setActiveTab] = useState<'blog' | 'events' | 'testimonials'>('blog');
 
-    // Blog & Inquiry State
+    // Blog State
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [inquiries, setInquiries] = useState<Inquiry[]>([]);
     const [isEditing, setIsEditing] = useState(false);
@@ -70,9 +83,14 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     const [newEventTitle, setNewEventTitle] = useState('');
     const [newEventLink, setNewEventLink] = useState('');
     const [newEventBtnText, setNewEventBtnText] = useState('Register Now');
+    const [newEventDesc, setNewEventDesc] = useState('');
     const [eventImageFile, setEventImageFile] = useState<File | null>(null);
     const [isAddingEvent, setIsAddingEvent] = useState(false);
-    const [newEventDesc, setNewEventDesc] = useState('');
+
+    // Testimonial State
+    const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+    const [newTestimonial, setNewTestimonial] = useState<Partial<Testimonial>>({ name: '', message: '', rating: 5, location: 'Google Review' });
+    const [isAddingTestimonial, setIsAddingTestimonial] = useState(false);
 
     // Loading
     const [loading, setLoading] = useState(false);
@@ -89,7 +107,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     useEffect(() => {
         const loadAllData = async () => {
             setFetchingData(true);
-            await Promise.all([fetchPosts(), fetchInquiries(), fetchEvents()]);
+            await Promise.all([fetchPosts(), fetchInquiries(), fetchEvents(), fetchTestimonials()]);
             setFetchingData(false);
         };
         loadAllData();
@@ -108,8 +126,33 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         const { data } = await supabase.from('events').select('*').order('created_at', { ascending: false });
         setEvents(data || []);
     };
+    const fetchTestimonials = async () => {
+        const { data } = await supabase.from('testimonials').select('*').order('created_at', { ascending: false });
+        setTestimonials(data || []);
+    };
 
-    // --- EVENT HANDLERS ---
+    // --- HANDLERS ---
+
+    // Testimonials
+    const handleSaveTestimonial = async () => {
+        if (!newTestimonial.name || !newTestimonial.message) return alert("Name and Message required");
+        setLoading(true);
+        const { error } = await supabase.from('testimonials').insert([newTestimonial]);
+        if (error) alert("Error: " + error.message);
+        else {
+            await fetchTestimonials();
+            setNewTestimonial({ name: '', message: '', rating: 5, location: 'Google Review' });
+            setIsAddingTestimonial(false);
+        }
+        setLoading(false);
+    };
+    const handleDeleteTestimonial = async (id: string) => {
+        if(!window.confirm("Delete this review?")) return;
+        await supabase.from('testimonials').delete().eq('id', id);
+        fetchTestimonials();
+    };
+
+    // Events
     const handleSaveEvent = async () => {
         if (!newEventTitle || !newEventLink) return alert("Title and Link are required");
         setLoading(true);
@@ -148,7 +191,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         if (!error) fetchEvents();
     };
 
-    // --- BLOG HANDLERS ---
+    // Blog
     const handleCopyLink = (slug: string) => {
         const url = `${window.location.origin}/?post=${slug}`;
         navigator.clipboard.writeText(url).then(() => alert(`Link copied:\n${url}`)).catch(() => alert('Failed to copy'));
@@ -233,11 +276,69 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                     <button onClick={onBackToHome} className="flex items-center gap-2 text-blue-600 font-bold hover:underline"><Home className="w-5 h-5"/> Back to Home</button>
-                    <div className="bg-white p-1 rounded-lg shadow-sm flex">
-                        <button onClick={() => setActiveTab('blog')} className={`px-6 py-2 rounded-md font-medium transition-colors ${activeTab === 'blog' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50'}`}>Blog & Inquiries</button>
-                        <button onClick={() => setActiveTab('events')} className={`px-6 py-2 rounded-md font-medium transition-colors ${activeTab === 'events' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50'}`}>Events Manager</button>
+                    <div className="bg-white p-1 rounded-lg shadow-sm flex flex-wrap justify-center gap-1">
+                        <button onClick={() => setActiveTab('blog')} className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === 'blog' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50'}`}>Blog</button>
+                        <button onClick={() => setActiveTab('events')} className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === 'events' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50'}`}>Events</button>
+                        <button onClick={() => setActiveTab('testimonials')} className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === 'testimonials' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50'}`}>Reviews</button>
                     </div>
                 </div>
+
+                {/* === TESTIMONIALS TAB === */}
+                {activeTab === 'testimonials' && (
+                    <div className="space-y-8 animate-fadeIn">
+                        <div className="flex justify-between items-center">
+                            <div><h2 className="text-3xl font-bold text-blue-900">Testimonials</h2><p className="text-gray-600">Manage student reviews</p></div>
+                            <button onClick={() => setIsAddingTestimonial(true)} className="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 flex items-center gap-2"><Plus className="w-5 h-5"/> Add Review</button>
+                        </div>
+
+                        {isAddingTestimonial && (
+                            <div className="bg-white p-6 rounded-xl shadow-lg border border-green-100">
+                                <h3 className="text-lg font-bold text-blue-900 mb-4">Add New Review</h3>
+                                <div className="grid gap-4">
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <input placeholder="Student Name" className="border p-3 rounded" value={newTestimonial.name} onChange={e => setNewTestimonial({...newTestimonial, name: e.target.value})} />
+                                        <input placeholder="Location / Role (e.g. 'Google Review')" className="border p-3 rounded" value={newTestimonial.location} onChange={e => setNewTestimonial({...newTestimonial, location: e.target.value})} />
+                                    </div>
+                                    <textarea placeholder="Review Message..." className="border p-3 rounded" rows={3} value={newTestimonial.message} onChange={e => setNewTestimonial({...newTestimonial, message: e.target.value})} />
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-bold text-gray-700">Rating:</span>
+                                        {[1,2,3,4,5].map(star => (
+                                            <button key={star} onClick={() => setNewTestimonial({...newTestimonial, rating: star})} className={`${(newTestimonial.rating || 5) >= star ? 'text-yellow-400' : 'text-gray-300'}`}><Star className="w-6 h-6 fill-current"/></button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex gap-3 mt-6 justify-end">
+                                    <button onClick={() => setIsAddingTestimonial(false)} className="text-gray-600 px-4 py-2 hover:bg-gray-100 rounded">Cancel</button>
+                                    <button onClick={handleSaveTestimonial} disabled={loading} className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-bold">{loading ? 'Saving...' : 'Save Review'}</button>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                            {testimonials.map(t => (
+                                <div key={t.id} className="bg-white p-6 rounded-xl shadow border border-gray-100 relative">
+                                    <button onClick={() => handleDeleteTestimonial(t.id)} className="absolute top-4 right-4 text-red-400 hover:text-red-600 bg-red-50 p-1 rounded"><Trash2 className="w-4 h-4"/></button>
+                                    <div className="flex items-center gap-1 mb-2">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star key={i} className={`w-4 h-4 ${i < t.rating ? 'text-yellow-400 fill-current' : 'text-gray-200'}`} />
+                                        ))}
+                                    </div>
+                                    <p className="text-gray-600 italic mb-4">"{t.message}"</p>
+                                    <div>
+                                        <h4 className="font-bold text-blue-900">{t.name}</h4>
+                                        <p className="text-xs text-gray-500">{t.location}</p>
+                                    </div>
+                                </div>
+                            ))}
+                            {testimonials.length === 0 && !isAddingTestimonial && (
+                                <div className="col-span-2 text-center py-12 bg-white rounded-xl text-gray-500 border border-dashed border-gray-300">
+                                    <p>No reviews added yet.</p>
+                                    <p className="text-sm">Click "Add Review" above to start.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* === EVENTS TAB === */}
                 {activeTab === 'events' && (
@@ -255,17 +356,10 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                         <div><label className="block text-sm font-bold mb-1 text-gray-700">Button Text</label><input placeholder="e.g. Register Now" className="border p-3 rounded w-full" value={newEventBtnText} onChange={e => setNewEventBtnText(e.target.value)} /></div>
                                         <div><label className="block text-sm font-bold mb-1 text-gray-700">Link</label><div className="flex items-center border rounded bg-white"><span className="p-3 text-gray-400"><LinkIcon size={16}/></span><input placeholder="https://..." className="p-3 w-full outline-none" value={newEventLink} onChange={e => setNewEventLink(e.target.value)} /></div></div>
                                     </div>
-                                    <div>
-                                            <label className="block text-sm font-bold mb-1 text-gray-700">Short Description</label>
-                                            <textarea 
-                                                placeholder="e.g. Join us for a special event! OR In this blog, we explore the basics of..." 
-                                                className="border p-3 rounded w-full" 
-                                                rows={2}
-                                                value={newEventDesc} 
-                                                onChange={e => setNewEventDesc(e.target.value)} 
-                                            />
-                                        </div>
-                                    <div><label className="block text-sm font-bold mb-1 text-gray-700">Event Poster (Image)</label><div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer relative"><input type="file" accept="image/*" onChange={(e) => e.target.files && setEventImageFile(e.target.files[0])} className="absolute inset-0 opacity-0 cursor-pointer" />{eventImageFile ? <div className="text-center"><p className="text-green-600 font-bold">{eventImageFile.name}</p><p className="text-xs">Click to change</p></div> : <><ImageIcon className="w-8 h-8 mb-2 text-gray-400" /><p className="text-sm">Click to upload poster</p></>}</div></div>
+                                    <div className="space-y-4">
+                                        <div><label className="block text-sm font-bold mb-1 text-gray-700">Short Description</label><textarea placeholder="Popup Description..." className="border p-3 rounded w-full" rows={2} value={newEventDesc} onChange={e => setNewEventDesc(e.target.value)} /></div>
+                                        <div><label className="block text-sm font-bold mb-1 text-gray-700">Event Poster (Image)</label><div className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-50 cursor-pointer relative"><input type="file" accept="image/*" onChange={(e) => e.target.files && setEventImageFile(e.target.files[0])} className="absolute inset-0 opacity-0 cursor-pointer" />{eventImageFile ? <p className="text-green-600 font-bold">{eventImageFile.name}</p> : <><ImageIcon className="w-6 h-6 mb-1" /><p className="text-xs">Upload</p></>}</div></div>
+                                    </div>
                                 </div>
                                 <div className="flex gap-3 mt-6 justify-end"><button onClick={() => setIsAddingEvent(false)} className="text-gray-600 px-4 py-2 hover:bg-gray-100 rounded">Cancel</button><button onClick={handleSaveEvent} disabled={loading} className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-bold">{loading ? 'Uploading...' : 'Publish Event'}</button></div>
                             </div>
@@ -294,27 +388,25 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                     <div className="space-y-12 animate-fadeIn">
                         <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
                             <div className="flex items-center gap-3 mb-6 pb-4 border-b"><MessageCircle className="w-6 h-6 text-blue-600" /><h2 className="text-2xl font-bold text-blue-900">Student Inquiries</h2></div>
-                            {fetchingData ? <div className="text-center py-4">Loading...</div> : inquiries.length === 0 ? (<div className="text-center py-8 text-gray-500">No inquiries yet.</div>) : (
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full">
-                                        <thead className="bg-blue-50 text-blue-900 text-xs uppercase font-bold"><tr><th className="p-3 text-left">Date</th><th className="p-3 text-left">Name</th><th className="p-3 text-left">Course</th><th className="p-3 text-left">Message</th><th className="p-3 text-left">Action</th></tr></thead>
-                                        <tbody className="divide-y">
-                                            {inquiries.map(inq => {
-                                                const cleanPhone = inq.phone.replace(/\D/g, '');
-                                                return (
-                                                    <tr key={inq.id} className="hover:bg-gray-50">
-                                                        <td className="p-3 text-sm text-gray-500">{new Date(inq.created_at).toLocaleDateString()}</td>
-                                                        <td className="p-3 text-sm font-bold text-gray-800">{inq.name}<div className="text-xs text-gray-500 font-normal">{inq.email}</div></td>
-                                                        <td className="p-3"><span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">{inq.course}</span></td>
-                                                        <td className="p-3 text-sm text-gray-600 max-w-xs truncate">{inq.message}</td>
-                                                        <td className="p-3"><a href={`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(`Hi ${inq.name}, this is from Krishna Flute Academy regarding your inquiry for the ${inq.course}.`)}`} target="_blank" rel="noreferrer" className="text-green-600 bg-green-50 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 w-fit hover:bg-green-100"><MessageCircle size={14}/> Chat</a></td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full">
+                                    <thead className="bg-blue-50 text-blue-900 text-xs uppercase font-bold"><tr><th className="p-3 text-left">Date</th><th className="p-3 text-left">Name</th><th className="p-3 text-left">Course</th><th className="p-3 text-left">Message</th><th className="p-3 text-left">Action</th></tr></thead>
+                                    <tbody className="divide-y">
+                                        {inquiries.map(inq => {
+                                            const cleanPhone = inq.phone.replace(/\D/g, '');
+                                            return (
+                                                <tr key={inq.id} className="hover:bg-gray-50">
+                                                    <td className="p-3 text-sm text-gray-500">{new Date(inq.created_at).toLocaleDateString()}</td>
+                                                    <td className="p-3 text-sm font-bold text-gray-800">{inq.name}<div className="text-xs text-gray-500 font-normal">{inq.email}</div></td>
+                                                    <td className="p-3"><span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">{inq.course}</span></td>
+                                                    <td className="p-3 text-sm text-gray-600 max-w-xs truncate">{inq.message}</td>
+                                                    <td className="p-3"><a href={`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(`Hi ${inq.name}, this is from Krishna Flute Academy regarding your inquiry for the ${inq.course}.`)}`} target="_blank" rel="noreferrer" className="text-green-600 bg-green-50 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 w-fit hover:bg-green-100"><MessageCircle size={14}/> Chat</a></td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                         <div>
                             <div className="flex justify-between items-center mb-6">
@@ -327,7 +419,6 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                 }} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow hover:bg-blue-700"><Plus className="w-5 h-5"/> New Post</button>
                             </div>
-                            
                             <div className="grid gap-4">
                                 {posts.map(post => (
                                     <div key={post.id} className="bg-white p-5 rounded-xl shadow border border-gray-100 flex justify-between items-center hover:shadow-md transition-shadow">
@@ -348,7 +439,6 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                         </div>
                                     </div>
                                 ))}
-                                {posts.length === 0 && <div className="text-center py-12 bg-white rounded-xl text-gray-500">No posts found.</div>}
                             </div>
                         </div>
                     </div>

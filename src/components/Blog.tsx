@@ -207,9 +207,9 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
                 {filteredPosts.length === 0 ? (
                     <div className="text-center py-20"><p className="text-2xl text-blue-700">No blog posts available yet.</p></div>
                 ) : (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredPosts.map((post, index) => (
-                            <article key={post.id} onClick={() => handlePostClick(post)} className="bg-white rounded-2xl shadow-xl overflow-hidden cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-2xl group relative" style={{ animationDelay: `${index * 100}ms` }}>
+                    <div className="flex overflow-x-auto pb-8 gap-6 snap-x snap-mandatory scroll-smooth no-scrollbar">
+                            {filteredPosts.map((post, index) => (
+                                <article key={post.id} onClick={() => handlePostClick(post)} className="bg-white rounded-2xl shadow-xl overflow-hidden cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-2xl group relative flex-shrink-0 w-[85vw] sm:w-[350px] md:w-[400px] snap-center" style={{ animationDelay: `${index * 100}ms` }}>
                                 {post.featured_image && (
                                     <div className="relative h-48 overflow-hidden">
                                         <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />

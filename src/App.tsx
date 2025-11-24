@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Music, Download, Users, Award, Phone, Mail, MapPin, Star, Play, BookOpen, Heart, Sparkles, Facebook, Instagram, Youtube, MessageSquare, ChevronRight, Menu, X, Lock, ExternalLink, Link as LinkIcon, Image as ImageIcon, Copy, Share2 } from 'lucide-react';
+import { Music, Download, Users, Award, Phone, Mail, MapPin, Star, Play, BookOpen, Heart, Sparkles, Facebook, Instagram, Youtube, MessageSquare, ChevronRight, Menu, X, Lock, ExternalLink, Link as LinkIcon, Image as ImageIcon, Copy, Share2, User } from 'lucide-react';
 import { Blog } from './components/Blog';
 import { BlogAdmin } from './components/BlogAdmin';
 import { supabase, BlogPost } from './lib/supabase';
@@ -140,7 +140,7 @@ function App() {
     const [activeEvent, setActiveEvent] = useState<{ title: string, registration_link: string, image_url?: string } | null>(null);
     const [showEventPopup, setShowEventPopup] = useState(false);
     const [bannerClosed, setBannerClosed] = useState(false);
-    
+    const [testimonials, setTestimonials] = useState<any[]>([]);
     // 👇 ADD THIS MISSING BLOCK 👇
     useEffect(() => {
         const fetchActiveEvent = async () => {
@@ -151,6 +151,7 @@ function App() {
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .maybeSingle();
+                
             
             if (data) setActiveEvent(data);
         };
@@ -260,6 +261,15 @@ function App() {
                     setShowEventPopup(true);
                 }, 3000);
             }
+            // 👇 ADD THIS NEW BLOCK HERE 👇
+            const { data: reviews } = await supabase
+                .from('testimonials')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(3);
+            
+            if (reviews) setTestimonials(reviews);
+        
         };
         fetchData();
     }, []);
@@ -406,7 +416,7 @@ Hello Krishna Flute Academy, I have an inquiry!
         className="bg-white text-red-600 text-xs md:text-sm font-extrabold px-3 py-1 md:px-4 md:py-1.5 rounded-full shadow-sm hover:bg-gray-100 transition-transform transform hover:scale-105 flex items-center gap-1"
     >
         {/* 👇 Use dynamic text, fallback to 'Register Now' */}
-                                {activeEvent?.button_text || 'Register Now'} 
+                                {activeEvent.button_text || 'Register Now'} 
                                 <ExternalLink className="w-3 h-3" />
                             </a>
 </div>
@@ -1034,6 +1044,30 @@ Hello Krishna Flute Academy, I have an inquiry!
                             Download Brochure 
                             <Download className="w-4 h-4 ml-2 opacity-70 group-hover:opacity-100 transition-opacity" />
                         </a>
+                    </div>
+                </div>
+            </section>
+
+            {/* Testimonials Section */}
+            <section className="py-20 px-4 bg-yellow-50">
+                <div className="max-w-6xl mx-auto">
+                    <h2 className="text-4xl font-bold text-blue-900 text-center mb-12">Student Love</h2>
+                    <div className="grid md:grid-cols-3 gap-6">
+                        {testimonials.map((t: any) => (
+                            <div key={t.id} className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all">
+                                <div className="flex gap-1 text-yellow-400 mb-4">
+                                    {[...Array(t.rating)].map((_, i) => <Star key={i} className="fill-current w-5 h-5"/>)}
+                                </div>
+                                <p className="text-gray-600 italic mb-6 leading-relaxed">"{t.message}"</p>
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-blue-100 text-blue-600 rounded-full p-2"><User className="w-5 h-5"/></div>
+                                    <div>
+                                        <h4 className="font-bold text-blue-900">{t.name}</h4>
+                                        <p className="text-xs text-gray-500">{t.location}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
