@@ -247,7 +247,7 @@ function App() {
             // Fetch Active Event
             const { data: eventData } = await supabase
                 .from('events')
-                .select('title, registration_link, image_url') // Get the image too
+                .select('title, registration_link, image_url, button_text, description') // Get the image too
                 .eq('is_active', true)
                 .order('created_at', { ascending: false })
                 .limit(1)
@@ -405,8 +405,10 @@ Hello Krishna Flute Academy, I have an inquiry!
         rel="noopener noreferrer"
         className="bg-white text-red-600 text-xs md:text-sm font-extrabold px-3 py-1 md:px-4 md:py-1.5 rounded-full shadow-sm hover:bg-gray-100 transition-transform transform hover:scale-105 flex items-center gap-1"
     >
-        Register <ExternalLink className="w-3 h-3" />
-    </a>
+        {/* 👇 Use dynamic text, fallback to 'Register Now' */}
+                                {activeEvent?.button_text || 'Register Now'} 
+                                <ExternalLink className="w-3 h-3" />
+                            </a>
 </div>
                         <button 
                             onClick={() => setBannerClosed(true)} 
@@ -642,7 +644,9 @@ Hello Krishna Flute Academy, I have an inquiry!
                         {/* Content */}
                         <div className="p-6 text-center">
                             <h3 className="text-2xl font-bold text-blue-900 mb-2">{activeEvent.title}</h3>
-                            <p className="text-gray-600 mb-6 text-sm">Join us for this special event! Click below to register.</p>
+                            <p className="text-gray-600 mb-6 text-sm">
+                                {activeEvent.description || "Join us for this special event! Click below to register."}
+                            </p>
                             
                             <a 
                                 href={activeEvent.registration_link}

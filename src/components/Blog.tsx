@@ -93,6 +93,7 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
 
     const handleBack = () => {
         setSelectedPost(null);
+        window.history.pushState({}, '', window.location.pathname);
         if (onBack) onBack();
     };
 
@@ -140,7 +141,17 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
     return (
         <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
-                <div className="mb-8"><button onClick={() => window.location.reload()} className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"><Home className="w-5 h-5" /> <span>Back to Home</span></button></div>
+                <div className="mb-8"><button
+    onClick={() => {
+        // 👇 NEW: Force navigation to the clean homepage URL
+        window.location.href = window.location.pathname;
+    }}
+    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+>
+    <Home className="w-5 h-5" />
+    <span>Back to Home</span>
+</button>
+</div>
                 
                 <div className="text-center mb-16">
                     <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6">Our Blog</h1>

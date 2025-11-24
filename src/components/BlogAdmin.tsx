@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Save, X, Eye, EyeOff, Home, MessageCircle, Mail, Calendar, BookOpen, Sparkles, Link as LinkIcon, Image as ImageIcon, Share2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Save, X, Eye, EyeOff, Home, MessageCircle, Mail, Calendar, BookOpen, Sparkles, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
 import { supabase, BlogPost } from '../lib/supabase';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -38,7 +38,9 @@ interface Event {
     created_at: string;
     title: string;
     registration_link: string;
-    image_url?: string; // 👈 Added Image URL
+    image_url?: string;
+    button_text?: string;
+    description?: string;
     is_active: boolean;
 }
 
@@ -49,9 +51,10 @@ interface BlogAdminProps {
 const SUPABASE_BUCKET_NAME = 'blog_images';
 
 export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
+    // --- STATE MANAGEMENT ---
     const [activeTab, setActiveTab] = useState<'blog' | 'events'>('blog');
 
-    // Blog State
+    // Blog & Inquiry State
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [inquiries, setInquiries] = useState<Inquiry[]>([]);
     const [isEditing, setIsEditing] = useState(false);
@@ -66,11 +69,22 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     const [events, setEvents] = useState<Event[]>([]);
     const [newEventTitle, setNewEventTitle] = useState('');
     const [newEventLink, setNewEventLink] = useState('');
-    const [eventImageFile, setEventImageFile] = useState<File | null>(null); // 👈 New State for Event Poster
+    const [newEventBtnText, setNewEventBtnText] = useState('Register Now');
+    const [eventImageFile, setEventImageFile] = useState<File | null>(null);
     const [isAddingEvent, setIsAddingEvent] = useState(false);
+    const [newEventDesc, setNewEventDesc] = useState('');
 
+    // Loading
     const [loading, setLoading] = useState(false);
     const [fetchingData, setFetchingData] = useState(true);
+
+    // --- EFFECTS ---
+    useEffect(() => {
+        if (!currentPost.id && (currentPost.title || currentPost.content)) {
+            const draftData = { ...currentPost };
+            localStorage.setItem('kfa_blog_draft', JSON.stringify(draftData));
+        }
+    }, [currentPost]);
 
     useEffect(() => {
         const loadAllData = async () => {
@@ -81,70 +95,53 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         loadAllData();
     }, []);
 
+    // --- FETCH FUNCTIONS ---
     const fetchPosts = async () => {
         const { data } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false });
         setPosts(data || []);
     };
-
     const fetchInquiries = async () => {
         const { data } = await supabase.from('inquiries').select('*').order('created_at', { ascending: false });
         setInquiries(data || []);
     };
-
     const fetchEvents = async () => {
         const { data } = await supabase.from('events').select('*').order('created_at', { ascending: false });
         setEvents(data || []);
     };
 
     // --- EVENT HANDLERS ---
-
     const handleSaveEvent = async () => {
         if (!newEventTitle || !newEventLink) return alert("Title and Link are required");
         setLoading(true);
-        
         let posterUrl = null;
-
-        // 1. Upload Poster if exists
         if (eventImageFile) {
             const fileName = `event-${Date.now()}-${eventImageFile.name}`;
             const { error: uploadError } = await supabase.storage.from(SUPABASE_BUCKET_NAME).upload(fileName, eventImageFile);
-            if (uploadError) {
-                alert("Error uploading poster");
-                setLoading(false);
-                return;
+            if (!uploadError) {
+                const { data } = supabase.storage.from(SUPABASE_BUCKET_NAME).getPublicUrl(fileName);
+                posterUrl = data.publicUrl;
             }
-            const { data } = supabase.storage.from(SUPABASE_BUCKET_NAME).getPublicUrl(fileName);
-            posterUrl = data.publicUrl;
         }
-
-        // 2. Save Event
         const { error } = await supabase.from('events').insert([{
             title: newEventTitle,
             registration_link: newEventLink,
             image_url: posterUrl,
+            button_text: newEventBtnText,
+            description: newEventDesc,
             is_active: true 
         }]);
-        
-        if (error) {
-            alert("Error creating event: " + error.message);
-        } else {
+        if (error) alert("Error: " + error.message);
+        else {
             await fetchEvents();
-            setNewEventTitle('');
-            setNewEventLink('');
-            setEventImageFile(null);
-            setIsAddingEvent(false);
+            setNewEventTitle(''); setNewEventLink(''); setNewEventBtnText('Register Now'); setNewEventDesc(''); setEventImageFile(null); setIsAddingEvent(false);
         }
         setLoading(false);
     };
-
     const toggleEventStatus = async (event: Event) => {
-        if (!event.is_active) {
-            await supabase.from('events').update({ is_active: false }).neq('id', event.id);
-        }
+        if (!event.is_active) await supabase.from('events').update({ is_active: false }).neq('id', event.id);
         const { error } = await supabase.from('events').update({ is_active: !event.is_active }).eq('id', event.id);
         if (!error) fetchEvents();
     };
-
     const handleDeleteEvent = async (id: string) => {
         if(!window.confirm("Delete this event?")) return;
         const { error } = await supabase.from('events').delete().eq('id', id);
@@ -152,24 +149,11 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     };
 
     // --- BLOG HANDLERS ---
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setImageFile(e.target.files[0]);
-            setCurrentPost(prev => ({ ...prev, featured_image: null }));
-        }
-    };
     const handleCopyLink = (slug: string) => {
-        // Construct the full URL
         const url = `${window.location.origin}/?post=${slug}`;
-        
-        // Copy to clipboard
-        navigator.clipboard.writeText(url).then(() => {
-            alert(`Link copied to clipboard!\n\n${url}`);
-        }).catch(err => {
-            console.error('Failed to copy: ', err);
-            alert('Failed to copy link. You can manually copy it from the browser address bar when viewing the post.');
-        });
+        navigator.clipboard.writeText(url).then(() => alert(`Link copied:\n${url}`)).catch(() => alert('Failed to copy'));
     };
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => { if (e.target.files && e.target.files[0]) { setImageFile(e.target.files[0]); setCurrentPost(prev => ({ ...prev, featured_image: null })); } };
     const handleRemoveImage = () => { setImageFile(null); setCurrentPost(prev => ({ ...prev, featured_image: null })); const fileInput = document.getElementById('postImage') as HTMLInputElement; if (fileInput) fileInput.value = ''; };
     const generateSlug = (title: string) => title?.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     const handleTitleChange = (title: string) => { setCurrentPost(prev => ({ ...prev, title, slug: !prev.id || !prev.slug ? generateSlug(title) : prev.slug })); };
@@ -178,6 +162,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     const handleEdit = (post: BlogPost) => { setCurrentPost(post); setIsEditing(true); window.scrollTo({ top: 0, behavior: 'smooth' }); };
     const handleDelete = async (postId: string) => { if (!window.confirm('Delete post?')) return; await supabase.from('blog_posts').delete().eq('id', postId); fetchPosts(); };
     const handleCancel = () => { localStorage.removeItem('kfa_blog_draft'); setCurrentPost({ title: '', slug: '', content: '', excerpt: '', featured_image: '', author_name: 'Krishna Flute Academy', author_email: '', published: false, tags: [] }); setIsEditing(false); setTagInput(''); setImageFile(null); };
+    
     const handleSave = async () => {
         if (!currentPost.title || !currentPost.content) return alert('Title & Content required');
         setLoading(true);
@@ -195,16 +180,10 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
             else await supabase.from('blog_posts').insert([postData]);
             await fetchPosts();
             localStorage.removeItem('kfa_blog_draft');
-            
-            // Generate the link for the user to see immediately
-            const finalSlug = postData.slug;
-            const shareUrl = `${window.location.origin}/?post=${finalSlug}`;
-            
+            const shareUrl = `${window.location.origin}/?post=${postData.slug}`;
             handleCancel();
-            
-            // Show the link in the success alert
-            alert(`Post saved successfully!\n\nHere is your shareable link:\n${shareUrl}`);
-        } catch (err: any) { console.error(err); alert('Error saving: ' + err.message); } finally { setLoading(false); }
+            alert(`Saved!\n\nShare Link:\n${shareUrl}`);
+        } catch (err: any) { console.error(err); alert('Error: ' + err.message); } finally { setLoading(false); }
     };
 
     // --- EDITOR VIEW ---
@@ -264,83 +243,43 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                 {activeTab === 'events' && (
                     <div className="space-y-8 animate-fadeIn">
                         <div className="flex justify-between items-center">
-                            <div>
-                                <h2 className="text-3xl font-bold text-blue-900">Event Popup</h2>
-                                <p className="text-gray-600">Create a popup event with a poster</p>
-                            </div>
+                            <div><h2 className="text-3xl font-bold text-blue-900">Event Popup</h2><p className="text-gray-600">Create a popup event with a poster</p></div>
                             <button onClick={() => setIsAddingEvent(true)} className="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 flex items-center gap-2"><Plus className="w-5 h-5"/> New Event</button>
                         </div>
-
-                        {/* New Event Form */}
                         {isAddingEvent && (
                             <div className="bg-white p-6 rounded-xl shadow-lg border border-green-100">
                                 <h3 className="text-lg font-bold text-blue-900 mb-4">Create New Event Popup</h3>
                                 <div className="grid gap-4 md:grid-cols-2">
                                     <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-bold mb-1 text-gray-700">Event Title</label>
-                                            <input placeholder="e.g. Weekend Flute Workshop" className="border p-3 rounded w-full" value={newEventTitle} onChange={e => setNewEventTitle(e.target.value)} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-bold mb-1 text-gray-700">Registration Link</label>
-                                            <div className="flex items-center border rounded bg-white">
-                                                <span className="p-3 text-gray-400"><LinkIcon size={16}/></span>
-                                                <input placeholder="https://..." className="p-3 w-full outline-none" value={newEventLink} onChange={e => setNewEventLink(e.target.value)} />
-                                            </div>
-                                        </div>
+                                        <div><label className="block text-sm font-bold mb-1 text-gray-700">Event Title</label><input placeholder="e.g. Weekend Flute Workshop" className="border p-3 rounded w-full" value={newEventTitle} onChange={e => setNewEventTitle(e.target.value)} /></div>
+                                        <div><label className="block text-sm font-bold mb-1 text-gray-700">Button Text</label><input placeholder="e.g. Register Now" className="border p-3 rounded w-full" value={newEventBtnText} onChange={e => setNewEventBtnText(e.target.value)} /></div>
+                                        <div><label className="block text-sm font-bold mb-1 text-gray-700">Link</label><div className="flex items-center border rounded bg-white"><span className="p-3 text-gray-400"><LinkIcon size={16}/></span><input placeholder="https://..." className="p-3 w-full outline-none" value={newEventLink} onChange={e => setNewEventLink(e.target.value)} /></div></div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold mb-1 text-gray-700">Event Poster (Image)</label>
-                                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer relative">
-                                            <input 
-                                                type="file" 
-                                                accept="image/*"
-                                                onChange={(e) => e.target.files && setEventImageFile(e.target.files[0])}
-                                                className="absolute inset-0 opacity-0 cursor-pointer" 
+                                            <label className="block text-sm font-bold mb-1 text-gray-700">Short Description</label>
+                                            <textarea 
+                                                placeholder="e.g. Join us for a special event! OR In this blog, we explore the basics of..." 
+                                                className="border p-3 rounded w-full" 
+                                                rows={2}
+                                                value={newEventDesc} 
+                                                onChange={e => setNewEventDesc(e.target.value)} 
                                             />
-                                            {eventImageFile ? (
-                                                <div className="text-center">
-                                                    <p className="text-green-600 font-bold">{eventImageFile.name}</p>
-                                                    <p className="text-xs">Click to change</p>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    <ImageIcon className="w-8 h-8 mb-2 text-gray-400" />
-                                                    <p className="text-sm">Click to upload poster</p>
-                                                </>
-                                            )}
                                         </div>
-                                    </div>
+                                    <div><label className="block text-sm font-bold mb-1 text-gray-700">Event Poster (Image)</label><div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer relative"><input type="file" accept="image/*" onChange={(e) => e.target.files && setEventImageFile(e.target.files[0])} className="absolute inset-0 opacity-0 cursor-pointer" />{eventImageFile ? <div className="text-center"><p className="text-green-600 font-bold">{eventImageFile.name}</p><p className="text-xs">Click to change</p></div> : <><ImageIcon className="w-8 h-8 mb-2 text-gray-400" /><p className="text-sm">Click to upload poster</p></>}</div></div>
                                 </div>
-                                <div className="flex gap-3 mt-6 justify-end">
-                                    <button onClick={() => setIsAddingEvent(false)} className="text-gray-600 px-4 py-2 hover:bg-gray-100 rounded">Cancel</button>
-                                    <button onClick={handleSaveEvent} disabled={loading} className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-bold">{loading ? 'Uploading...' : 'Publish Event'}</button>
-                                </div>
+                                <div className="flex gap-3 mt-6 justify-end"><button onClick={() => setIsAddingEvent(false)} className="text-gray-600 px-4 py-2 hover:bg-gray-100 rounded">Cancel</button><button onClick={handleSaveEvent} disabled={loading} className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-bold">{loading ? 'Uploading...' : 'Publish Event'}</button></div>
                             </div>
                         )}
-
-                        {/* Events List */}
                         <div className="bg-white rounded-xl shadow overflow-hidden">
                             <table className="w-full text-left">
-                                <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
-                                    <tr><th className="p-4">Poster</th><th className="p-4">Event Title</th><th className="p-4">Status</th><th className="p-4">Actions</th></tr>
-                                </thead>
+                                <thead className="bg-gray-50 text-gray-600 uppercase text-xs"><tr><th className="p-4">Poster</th><th className="p-4">Event Title</th><th className="p-4">Status</th><th className="p-4">Actions</th></tr></thead>
                                 <tbody className="divide-y">
                                     {events.map(event => (
                                         <tr key={event.id}>
-                                            <td className="p-4">
-                                                {event.image_url ? <img src={event.image_url} className="w-16 h-16 object-cover rounded shadow-sm" alt="Poster"/> : <div className="w-16 h-16 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400">No Img</div>}
-                                            </td>
+                                            <td className="p-4">{event.image_url ? <img src={event.image_url} className="w-16 h-16 object-cover rounded shadow-sm" alt="Poster"/> : <div className="w-16 h-16 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400">No Img</div>}</td>
                                             <td className="p-4 font-medium text-gray-900">{event.title}</td>
-                                            <td className="p-4">
-                                                <button onClick={() => toggleEventStatus(event)} className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-colors ${event.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                                                    {event.is_active ? <Eye className="w-3 h-3"/> : <EyeOff className="w-3 h-3"/>}
-                                                    {event.is_active ? 'Active Popup' : 'Inactive'}
-                                                </button>
-                                            </td>
-                                            <td className="p-4">
-                                                <button onClick={() => handleDeleteEvent(event.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-lg"><Trash2 className="w-4 h-4" /></button>
-                                            </td>
+                                            <td className="p-4"><button onClick={() => toggleEventStatus(event)} className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-colors ${event.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{event.is_active ? <Eye className="w-3 h-3"/> : <EyeOff className="w-3 h-3"/>} {event.is_active ? 'Active' : 'Inactive'}</button></td>
+                                            <td className="p-4"><button onClick={() => handleDeleteEvent(event.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-lg"><Trash2 className="w-4 h-4" /></button></td>
                                         </tr>
                                     ))}
                                     {events.length === 0 && <tr><td colSpan={4} className="p-8 text-center text-gray-500">No events created.</td></tr>}
@@ -350,70 +289,31 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                     </div>
                 )}
 
-                {/* === BLOG TAB (Existing) === */}
+                {/* === BLOG TAB === */}
                 {activeTab === 'blog' && (
                     <div className="space-y-12 animate-fadeIn">
                         <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
-                            <div className="flex items-center gap-3 mb-6 pb-4 border-b">
-                                <MessageCircle className="w-6 h-6 text-blue-600" />
-                                <h2 className="text-2xl font-bold text-blue-900">Student Inquiries</h2>
-                            </div>
-                            {fetchingData ? <div className="text-center py-4">Loading...</div> : inquiries.length === 0 ? (
-                                <div className="text-center py-8 text-gray-500">No inquiries yet.</div>
-                            ) : (
+                            <div className="flex items-center gap-3 mb-6 pb-4 border-b"><MessageCircle className="w-6 h-6 text-blue-600" /><h2 className="text-2xl font-bold text-blue-900">Student Inquiries</h2></div>
+                            {fetchingData ? <div className="text-center py-4">Loading...</div> : inquiries.length === 0 ? (<div className="text-center py-8 text-gray-500">No inquiries yet.</div>) : (
                                 <div className="overflow-x-auto">
-    <table className="min-w-full">
-        <thead className="bg-blue-50 text-blue-900 text-xs uppercase font-bold">
-            <tr>
-                <th className="p-3 text-left">Date</th>
-                <th className="p-3 text-left">Name</th>
-                <th className="p-3 text-left">Course</th>
-                <th className="p-3 text-left">Message</th>
-                <th className="p-3 text-left">Action</th>
-            </tr>
-        </thead>
-        <tbody className="divide-y">
-            {inquiries.map(inq => {
-                // 👇 HELPER: Clean the phone number (Remove +, spaces, -)
-                // Example: "+91 983-69" becomes "9198369"
-                const cleanPhone = inq.phone.replace(/\D/g, '');
-                
-                return (
-                    <tr key={inq.id} className="hover:bg-gray-50">
-                        <td className="p-3 text-sm text-gray-500">
-                            {new Date(inq.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="p-3 text-sm font-bold text-gray-800">
-                            {inq.name}
-                            <div className="text-xs text-gray-500 font-normal">{inq.email}</div>
-                        </td>
-                        <td className="p-3">
-                            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                {inq.course}
-                            </span>
-                        </td>
-                        <td className="p-3 text-sm text-gray-600 max-w-xs truncate">
-                            {inq.message}
-                        </td>
-                        <td className="p-3">
-                            <a 
-                                /* 👇 UPDATED LINK: Uses cleanPhone variable */
-                                href={`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(
-                                    `Hi ${inq.name}, this is from Krishna Flute Academy regarding your inquiry for the ${inq.course}. How can we help you?`
-                                )}`} 
-                                target="_blank" 
-                                rel="noreferrer"
-                                className="text-green-600 bg-green-50 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 w-fit hover:bg-green-100"
-                            >
-                                <MessageCircle size={14}/> Chat
-                            </a>
-                        </td>
-                    </tr>
-                );
-            })}
-        </tbody>
-    </table>
-</div>
+                                    <table className="min-w-full">
+                                        <thead className="bg-blue-50 text-blue-900 text-xs uppercase font-bold"><tr><th className="p-3 text-left">Date</th><th className="p-3 text-left">Name</th><th className="p-3 text-left">Course</th><th className="p-3 text-left">Message</th><th className="p-3 text-left">Action</th></tr></thead>
+                                        <tbody className="divide-y">
+                                            {inquiries.map(inq => {
+                                                const cleanPhone = inq.phone.replace(/\D/g, '');
+                                                return (
+                                                    <tr key={inq.id} className="hover:bg-gray-50">
+                                                        <td className="p-3 text-sm text-gray-500">{new Date(inq.created_at).toLocaleDateString()}</td>
+                                                        <td className="p-3 text-sm font-bold text-gray-800">{inq.name}<div className="text-xs text-gray-500 font-normal">{inq.email}</div></td>
+                                                        <td className="p-3"><span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">{inq.course}</span></td>
+                                                        <td className="p-3 text-sm text-gray-600 max-w-xs truncate">{inq.message}</td>
+                                                        <td className="p-3"><a href={`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(`Hi ${inq.name}, this is from Krishna Flute Academy regarding your inquiry for the ${inq.course}.`)}`} target="_blank" rel="noreferrer" className="text-green-600 bg-green-50 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 w-fit hover:bg-green-100"><MessageCircle size={14}/> Chat</a></td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
                             )}
                         </div>
                         <div>
@@ -427,6 +327,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                 }} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow hover:bg-blue-700"><Plus className="w-5 h-5"/> New Post</button>
                             </div>
+                            
                             <div className="grid gap-4">
                                 {posts.map(post => (
                                     <div key={post.id} className="bg-white p-5 rounded-xl shadow border border-gray-100 flex justify-between items-center hover:shadow-md transition-shadow">
@@ -441,23 +342,10 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                             </div>
                                         </div>
                                         <div className="flex gap-2">
-                                                    {/* 👇 NEW COPY LINK BUTTON */}
-                                                <button 
-                                                    onClick={() => handleCopyLink(post.slug)} 
-                                                    className="p-2 text-green-600 bg-green-50 rounded hover:bg-green-100"
-                                                    title="Copy Shareable Link"
-                                                >
-                                                    <LinkIcon size={18} />
-                                                </button>
-                                                
-                                                <button onClick={() => handleEdit(post)} className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100">
-                                                    <Edit2 size={18}/>
-                                                </button>
-                                                <button onClick={() => handleDelete(post.id)} className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100">
-                                                    <Trash2 size={18}/>
-                                                </button>
-                                            </div>
-                                        
+                                            <button onClick={() => handleCopyLink(post.slug)} className="p-2 text-green-600 bg-green-50 rounded hover:bg-green-100" title="Copy Link"><LinkIcon size={18}/></button>
+                                            <button onClick={() => handleEdit(post)} className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100"><Edit2 size={18}/></button>
+                                            <button onClick={() => handleDelete(post.id)} className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"><Trash2 size={18}/></button>
+                                        </div>
                                     </div>
                                 ))}
                                 {posts.length === 0 && <div className="text-center py-12 bg-white rounded-xl text-gray-500">No posts found.</div>}
