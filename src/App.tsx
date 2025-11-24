@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Music, Download, Users, Award, Phone, Mail, MapPin, Star, Play, BookOpen, Heart, Sparkles, Facebook, Instagram, Youtube, MessageSquare, ChevronRight, Menu, X, Lock } from 'lucide-react';
+import { Music, Download, Users, Award, Phone, Mail, MapPin, Star, Play, BookOpen, Heart, Sparkles, Facebook, Instagram, Youtube, MessageSquare, ChevronRight, Menu, X, Lock, ExternalLink } from 'lucide-react';
 import { Blog } from './components/Blog';
 import { BlogAdmin } from './components/BlogAdmin';
 import { supabase, BlogPost } from './lib/supabase';
@@ -127,7 +127,25 @@ function App() {
     const [formPhone, setFormPhone] = useState('');
     const [formCourse, setFormCourse] = useState('Select a course');
     const [formMessage, setFormMessage] = useState('');
-
+    const [activeEvent, setActiveEvent] = useState<{ title: string, registration_link: string, image_url?: string } | null>(null);
+    const [showEventPopup, setShowEventPopup] = useState(false);
+    const [bannerClosed, setBannerClosed] = useState(false);
+    
+    // 👇 ADD THIS MISSING BLOCK 👇
+    useEffect(() => {
+        const fetchActiveEvent = async () => {
+            const { data } = await supabase
+                .from('events')
+                .select('title, registration_link')
+                .eq('is_active', true)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            
+            if (data) setActiveEvent(data);
+        };
+        fetchActiveEvent();
+    }, []);
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 50);
@@ -172,6 +190,52 @@ function App() {
 
         fetchRecentPosts();
     }, []);
+    useEffect(() => {
+        const fetchData = async () => {
+            // Fetch Posts
+            const { data: posts } = await supabase.from('blog_posts').select('*').eq('published', true).order('published_at', { ascending: false }).limit(3);
+            if (posts) setRecentBlogPosts(posts);
+
+            // Fetch Active Event
+            const { data: eventData } = await supabase
+                .from('events')
+                .select('title, registration_link, image_url') // Get the image too
+                .eq('is_active', true)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            
+            if (eventData) {
+                setActiveEvent(eventData);
+                // Show popup after 3 seconds
+                setTimeout(() => {
+                    setShowEventPopup(true);
+                }, 3000);
+            }
+        };
+        fetchData();
+    }, []);
+
+    // 2. Scroll Listener
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 50);
+            const sections = ['about', 'founder', 'courses', 'contact', 'flutes', 'gallery', 'blog']; 
+            const newVisibleSections: Record<string, boolean> = {};
+            sections.forEach(sectionId => {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    const rect = element.getBoundingClientRect();
+                    const isInViewport = rect.top < window.innerHeight * 0.75 && rect.bottom > 0;
+                    newVisibleSections[sectionId] = isInViewport;
+                }
+            });
+            setVisibleSections(newVisibleSections);
+        };
+        window.addEventListener('scroll', handleScroll);
+        handleScroll();
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -180,6 +244,7 @@ function App() {
                 setShowAdminLogin(true);
             }
         };
+    
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
@@ -258,11 +323,59 @@ Hello Krishna Flute Academy, I have an inquiry!
         setIsAdmin(false);
         setCurrentView('home');
     };
+    // Helper to check if banner is visible
+    const isBannerVisible = activeEvent && !bannerClosed;
+    const renderHomeView = () => {
+        // 👇 Define the logic here
+        const isBannerVisible = activeEvent && !bannerClosed;
 
-    const renderHomeView = () => (
-        <div className="overflow-x-hidden">
+        return (
+            <div className="overflow-x-hidden">
+            {/* 1. TOP BANNER (FIXED) */}
+            {/* 👇 1. TOP BANNER */}
+                {isBannerVisible && (
+                    <div className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white px-4 py-2 md:py-3 shadow-lg flex justify-between items-center h-12 md:h-14 animate-slideDown">
+                        <div className="flex-1 flex items-center justify-center gap-2 md:gap-4">
+    {/* 👇 CHANGED: Show Image if available, otherwise show Sparkles */}
+    {activeEvent?.image_url ? (
+        <img 
+            src={activeEvent.image_url} 
+            alt="Event" 
+            className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border-2 border-white/50"
+        />
+    ) : (
+        <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-yellow-200 animate-pulse" />
+    )}
+    
+    <span className="text-xs md:text-sm font-bold uppercase tracking-wide truncate max-w-[200px] md:max-w-none">
+        {activeEvent?.title}
+    </span>
+    
+    <a 
+        href={activeEvent?.registration_link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="bg-white text-red-600 text-xs md:text-sm font-extrabold px-3 py-1 md:px-4 md:py-1.5 rounded-full shadow-sm hover:bg-gray-100 transition-transform transform hover:scale-105 flex items-center gap-1"
+    >
+        Register <ExternalLink className="w-3 h-3" />
+    </a>
+</div>
+                        <button 
+                            onClick={() => setBannerClosed(true)} 
+                            className="ml-2 bg-black/20 p-1 rounded-full hover:bg-black/30 transition-colors"
+                            aria-label="Close Banner"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                )}
             {/* Navigation */}
-            <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-lg py-2' : 'bg-white/90 backdrop-blur-md shadow-lg py-3'}`}>
+            <nav 
+                className={`fixed w-full z-50 transition-all duration-300 
+                    ${isBannerVisible ? 'top-12 md:top-14' : 'top-0'} 
+                    ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-lg py-2' : 'bg-white/90 backdrop-blur-md shadow-lg py-3'}
+                `}
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         {/* Logo Section - Left */}
@@ -327,7 +440,7 @@ Hello Krishna Flute Academy, I have an inquiry!
             </nav>
             {/* Mobile Menu Overlay */}
 {mobileMenuOpen && (
-    <div className="fixed inset-0 z-50 md:hidden">
+    <div className={`fixed inset-0 z-[55] md:hidden ${isBannerVisible ? 'top-12 md:top-14' : 'top-0'}`}>
         {/* Backdrop */}
         <div 
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -421,8 +534,85 @@ Hello Krishna Flute Academy, I have an inquiry!
     </div>
 )}
 
+{/* 👇 NEW FLOATING EVENT BANNER */}
+            {activeEvent && (
+                <div className="fixed top-20 left-0 right-0 z-[60] flex justify-center px-4 pointer-events-none">
+                    {/* pointer-events-none on parent allows clicking through the empty sides */}
+                    <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-blue-900 px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 pointer-events-auto animate-bounce-slow transform hover:scale-105 transition-all">
+                        <div className="flex items-center gap-2">
+                            <Sparkles className="w-5 h-5 text-white fill-white animate-pulse" />
+                            <span className="font-bold text-sm md:text-base">{activeEvent.title}</span>
+                        </div>
+                        <a 
+                            href={activeEvent.registration_link} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="bg-white text-blue-900 text-xs md:text-sm font-extrabold px-4 py-1.5 rounded-full hover:bg-blue-50 transition-colors shadow-sm whitespace-nowrap"
+                        >
+                            Register Now
+                        </a>
+                        <button 
+                            onClick={() => setActiveEvent(null)}
+                            className="ml-2 bg-black/10 p-1 rounded-full hover:bg-black/20 text-blue-900"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* 👇 NEW EVENT POPUP MODAL */}
+            {showEventPopup && activeEvent && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    {/* Dark Backdrop */}
+                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowEventPopup(false)}></div>
+                    
+                    {/* Modal Card */}
+                    <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scaleIn">
+                        {/* Close Button */}
+                        <button 
+                            onClick={() => setShowEventPopup(false)}
+                            className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1.5 hover:bg-black/70 z-10"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        {/* Poster Image */}
+                        {activeEvent.image_url ? (
+                            <img 
+                                src={activeEvent.image_url} 
+                                alt={activeEvent.title} 
+                                className="w-full h-auto object-cover"
+                            />
+                        ) : (
+                            // Fallback colorful header if no image
+                            <div className="bg-gradient-to-r from-blue-600 to-purple-600 h-32 flex items-center justify-center">
+                                <Sparkles className="w-12 h-12 text-white/30" />
+                            </div>
+                        )}
+
+                        {/* Content */}
+                        <div className="p-6 text-center">
+                            <h3 className="text-2xl font-bold text-blue-900 mb-2">{activeEvent.title}</h3>
+                            <p className="text-gray-600 mb-6 text-sm">Join us for this special event! Click below to register.</p>
+                            
+                            <a 
+                                href={activeEvent.registration_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block w-full bg-yellow-500 text-blue-900 font-extrabold py-3 rounded-full shadow-lg hover:bg-yellow-400 transition-transform transform hover:scale-105"
+                            >
+                                Register Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* Hero Section - Carousel */}
-<section className="relative pt-16 md:pt-20 pb-0 px-0 sm:px-0 overflow-hidden">
+<section className={`relative overflow-hidden transition-all duration-300
+                ${isBannerVisible ? 'pt-28 md:pt-34' : 'pt-16 md:pt-20'} 
+                pb-0 px-0 sm:px-0`}
+            >
   <Carousel
     autoPlay={true}
     infiniteLoop={true}
@@ -992,6 +1182,7 @@ Hello Krishna Flute Academy, I have an inquiry!
             </a>
         </div>
     );
+};
 
     const renderCurrentView = () => {
         switch (currentView) {
