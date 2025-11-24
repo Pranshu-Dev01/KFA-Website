@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Music, Download, Users, Award, Phone, Mail, MapPin, Star, Play, BookOpen, Heart, Sparkles, Facebook, Instagram, Youtube, MessageSquare, ChevronRight, Menu, X, Lock, ExternalLink } from 'lucide-react';
+import { Music, Download, Users, Award, Phone, Mail, MapPin, Star, Play, BookOpen, Heart, Sparkles, Facebook, Instagram, Youtube, MessageSquare, ChevronRight, Menu, X, Lock, ExternalLink, Link as LinkIcon, Image as ImageIcon, Copy, Share2 } from 'lucide-react';
 import { Blog } from './components/Blog';
 import { BlogAdmin } from './components/BlogAdmin';
 import { supabase, BlogPost } from './lib/supabase';
@@ -13,6 +13,7 @@ const heroImages = [
     // Add more images as needed
 ];
 // Blog Section Component
+// Blog Section Component
 const BlogSection = ({ 
     visible, 
     posts, 
@@ -25,9 +26,13 @@ const BlogSection = ({
     onReadPost: (id: string) => void;
 }) => {
     
-    const handleViewAllBlog = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        window.location.href = '#blog-page';
+    // 👇 Helper to copy link without opening the post
+    const handleCopyLink = (e: React.MouseEvent, slug: string) => {
+        e.stopPropagation(); // Stop the card from clicking/opening
+        const url = `${window.location.origin}/?post=${slug}`;
+        navigator.clipboard.writeText(url).then(() => {
+            alert("Link copied to clipboard!");
+        });
     };
 
     if (!posts || posts.length === 0) {
@@ -48,67 +53,72 @@ const BlogSection = ({
 
     return (
         <section id="blog" className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-blue-50/50">
-    <div className="max-w-7xl mx-auto">
-        <div className={`text-center mb-16 transform transition-all duration-1000 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900 mb-4 md:mb-6">Our Latest Insights</h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-yellow-500 to-blue-500 mx-auto mb-6 md:mb-8"></div>
-            <p className="text-lg md:text-xl text-blue-700 max-w-3xl mx-auto">
-                In-depth articles and guides from our master musicians.
-            </p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6 md:gap-10">
-            {posts.map((post, index) => (
-                <div
-                    key={post.id}
-                    // --- UPDATED ONCLICK HANDLER ---
-                    onClick={() => {
-                        onReadPost(post.id);
-                    }}
-                    // -------------------------------
-                    className={`block bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-[1.03] transition-all duration-500 hover:shadow-2xl group cursor-pointer ${visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-                    style={{ transitionDelay: `${index * 150}ms` }}
-                >
-                    {post.featured_image && (
-                        <div className="relative h-48 overflow-hidden">
-                            <img 
-                                src={post.featured_image} 
-                                alt={post.title} 
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            <div className="absolute inset-0 bg-blue-900/10 group-hover:bg-blue-900/20 transition-all"></div>
-                        </div>
-                    )}
-                    <div className="p-6 space-y-3">
-                        <h3 className="text-xl lg:text-2xl font-bold text-blue-900 group-hover:text-blue-700 transition-colors line-clamp-2">
-                            {post.title}
-                        </h3>
-                        <p className="text-sm md:text-base text-blue-800 leading-relaxed line-clamp-3">
-                            {post.excerpt}
-                        </p>
-                        <div className="flex items-center justify-between text-xs text-blue-600 pt-2">
-                            <span>{new Date(post.published_at || post.created_at).toLocaleDateString()}</span>
-                            <span className="flex items-center space-x-1">
-                                <span>{post.view_count} views</span>
-                            </span>
-                        </div>
-                        <span className="flex items-center space-x-2 text-sm font-semibold text-yellow-600 group-hover:text-yellow-700 transition-colors pt-2">
-                            <span>Read Article</span>
-                            <ChevronRight className="w-4 h-4" />
-                        </span>
-                    </div>
+            <div className="max-w-7xl mx-auto">
+                <div className={`text-center mb-16 transform transition-all duration-1000 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900 mb-4 md:mb-6">Our Latest Insights</h2>
+                    <div className="w-20 h-1 bg-gradient-to-r from-yellow-500 to-blue-500 mx-auto mb-6 md:mb-8"></div>
+                    <p className="text-lg md:text-xl text-blue-700 max-w-3xl mx-auto">
+                        In-depth articles and guides from our master musicians.
+                    </p>
                 </div>
-            ))}
-        </div>
-        <div className="text-center mt-12">
-            <button 
-                onClick={onViewAll}
-                className="bg-blue-700 text-white px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold hover:bg-blue-800 transition-all duration-300 transform hover:shadow-xl"
-            >
-                Explore All Articles <BookOpen className="inline-block w-5 h-5 ml-2" />
-            </button>
-        </div>
-    </div>
-</section>
+                <div className="grid md:grid-cols-3 gap-6 md:gap-10">
+                    {posts.map((post, index) => (
+                        <div
+                            key={post.id}
+                            onClick={() => onReadPost(post.id)}
+                            className={`relative block bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-[1.03] transition-all duration-500 hover:shadow-2xl group cursor-pointer ${visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+                            style={{ transitionDelay: `${index * 150}ms` }}
+                        >
+                            {post.featured_image && (
+                                <div className="relative h-48 overflow-hidden">
+                                    <img 
+                                        src={post.featured_image} 
+                                        alt={post.title} 
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-blue-900/10 group-hover:bg-blue-900/20 transition-all"></div>
+                                    
+                                    {/* 👇 NEW: Share Button on Top Right of Image */}
+                                    <button
+                                        onClick={(e) => handleCopyLink(e, post.slug || post.id)}
+                                        className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white text-blue-600 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
+                                        title="Copy Link"
+                                    >
+                                        <Share2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
+                            <div className="p-6 space-y-3">
+                                <h3 className="text-xl lg:text-2xl font-bold text-blue-900 group-hover:text-blue-700 transition-colors line-clamp-2">
+                                    {post.title}
+                                </h3>
+                                <p className="text-sm md:text-base text-blue-800 leading-relaxed line-clamp-3">
+                                    {post.excerpt}
+                                </p>
+                                <div className="flex items-center justify-between text-xs text-blue-600 pt-2">
+                                    <span>{new Date(post.published_at || post.created_at).toLocaleDateString()}</span>
+                                    <span className="flex items-center space-x-1">
+                                        <span>{post.view_count} views</span>
+                                    </span>
+                                </div>
+                                <span className="flex items-center space-x-2 text-sm font-semibold text-yellow-600 group-hover:text-yellow-700 transition-colors pt-2">
+                                    <span>Read Article</span>
+                                    <ChevronRight className="w-4 h-4" />
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div className="text-center mt-12">
+                    <button 
+                        onClick={onViewAll}
+                        className="bg-blue-700 text-white px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold hover:bg-blue-800 transition-all duration-300 transform hover:shadow-xl"
+                    >
+                        Explore All Articles <BookOpen className="inline-block w-5 h-5 ml-2" />
+                    </button>
+                </div>
+            </div>
+        </section>
     );
 };
 

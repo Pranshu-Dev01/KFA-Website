@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Save, X, Eye, EyeOff, Home, MessageCircle, Mail, Calendar, BookOpen, Sparkles, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit2, Trash2, Save, X, Eye, EyeOff, Home, MessageCircle, Mail, Calendar, BookOpen, Sparkles, Link as LinkIcon, Image as ImageIcon, Share2 } from 'lucide-react';
 import { supabase, BlogPost } from '../lib/supabase';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -158,6 +158,18 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
             setCurrentPost(prev => ({ ...prev, featured_image: null }));
         }
     };
+    const handleCopyLink = (slug: string) => {
+        // Construct the full URL
+        const url = `${window.location.origin}/?post=${slug}`;
+        
+        // Copy to clipboard
+        navigator.clipboard.writeText(url).then(() => {
+            alert(`Link copied to clipboard!\n\n${url}`);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            alert('Failed to copy link. You can manually copy it from the browser address bar when viewing the post.');
+        });
+    };
     const handleRemoveImage = () => { setImageFile(null); setCurrentPost(prev => ({ ...prev, featured_image: null })); const fileInput = document.getElementById('postImage') as HTMLInputElement; if (fileInput) fileInput.value = ''; };
     const generateSlug = (title: string) => title?.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     const handleTitleChange = (title: string) => { setCurrentPost(prev => ({ ...prev, title, slug: !prev.id || !prev.slug ? generateSlug(title) : prev.slug })); };
@@ -181,7 +193,17 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
             const postData = { ...currentPost, featured_image: imageUrl, slug: currentPost.slug || generateSlug(currentPost.title || ''), published_at: currentPost.published && !currentPost.published_at ? new Date().toISOString() : currentPost.published ? currentPost.published_at : null };
             if (currentPost.id) await supabase.from('blog_posts').update(postData).eq('id', currentPost.id);
             else await supabase.from('blog_posts').insert([postData]);
-            await fetchPosts(); localStorage.removeItem('kfa_blog_draft'); handleCancel(); alert('Saved!');
+            await fetchPosts();
+            localStorage.removeItem('kfa_blog_draft');
+            
+            // Generate the link for the user to see immediately
+            const finalSlug = postData.slug;
+            const shareUrl = `${window.location.origin}/?post=${finalSlug}`;
+            
+            handleCancel();
+            
+            // Show the link in the success alert
+            alert(`Post saved successfully!\n\nHere is your shareable link:\n${shareUrl}`);
         } catch (err: any) { console.error(err); alert('Error saving: ' + err.message); } finally { setLoading(false); }
     };
 
@@ -419,9 +441,23 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                             </div>
                                         </div>
                                         <div className="flex gap-2">
-                                            <button onClick={() => handleEdit(post)} className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100"><Edit2 size={18}/></button>
-                                            <button onClick={() => handleDelete(post.id)} className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"><Trash2 size={18}/></button>
-                                        </div>
+                                                    {/* 👇 NEW COPY LINK BUTTON */}
+                                                <button 
+                                                    onClick={() => handleCopyLink(post.slug)} 
+                                                    className="p-2 text-green-600 bg-green-50 rounded hover:bg-green-100"
+                                                    title="Copy Shareable Link"
+                                                >
+                                                    <LinkIcon size={18} />
+                                                </button>
+                                                
+                                                <button onClick={() => handleEdit(post)} className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100">
+                                                    <Edit2 size={18}/>
+                                                </button>
+                                                <button onClick={() => handleDelete(post.id)} className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100">
+                                                    <Trash2 size={18}/>
+                                                </button>
+                                            </div>
+                                        
                                     </div>
                                 ))}
                                 {posts.length === 0 && <div className="text-center py-12 bg-white rounded-xl text-gray-500">No posts found.</div>}
