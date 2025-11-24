@@ -156,6 +156,44 @@ function App() {
         };
         fetchActiveEvent();
     }, []);
+    // 1. Check URL on Load (To open shared links)
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const postIdentifier = params.get('post'); // Look for ?post=...
+        
+        if (postIdentifier) {
+            const findAndOpenPost = async () => {
+                // STRATEGY: Try finding by SLUG first (most common for shared links)
+                let { data, error } = await supabase
+                    .from('blog_posts')
+                    .select('id')
+                    .eq('slug', postIdentifier)
+                    .maybeSingle(); // Use maybeSingle to avoid 406 errors
+
+                // If not found by slug, check if it looks like a UUID and try ID
+                if (!data) {
+                    // Simple Regex to check if string is a UUID
+                    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(postIdentifier);
+                    
+                    if (isUUID) {
+                         const idQuery = await supabase
+                            .from('blog_posts')
+                            .select('id')
+                            .eq('id', postIdentifier)
+                            .maybeSingle();
+                         data = idQuery.data;
+                    }
+                }
+
+                // If we found a post (either by slug or ID), open it!
+                if (data) {
+                    setSelectedPostId(data.id);
+                    setCurrentView('blog');
+                }
+            };
+            findAndOpenPost();
+        }
+    }, []);
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 50);
