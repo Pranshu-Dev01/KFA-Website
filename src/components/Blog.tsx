@@ -12,7 +12,7 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
     const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
-    const [showAllTags, setShowAllTags] = useState(false);
+    const [showAllTags, setShowAllTags] = useState(false); // 👈 New State
 
     // --- Helper: Copy Link ---
     const handleCopyLink = (e: React.MouseEvent, slug: string) => {
@@ -22,10 +22,22 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
             alert("Link copied to clipboard!");
         });
     };
-    const getAllTags = () => {
-        const tagSet = new Set<string>();
-        posts.forEach(post => post.tags.forEach(tag => tagSet.add(tag)));
-        return Array.from(tagSet).sort(); // Sort alphabetically
+
+    // --- Helper: Get Top 10 Tags ---
+    const getPopularTags = () => {
+        const tagCounts: Record<string, number> = {};
+        
+        // Count occurrences
+        posts.forEach(post => {
+            post.tags.forEach(tag => {
+                tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+            });
+        });
+
+        // Return ALL tags sorted by popularity (removed .slice)
+        return Object.entries(tagCounts)
+            .sort(([, countA], [, countB]) => countB - countA)
+            .map(([tag]) => tag);
     };
 
     // --- Effects ---
@@ -93,7 +105,6 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
 
     const handleBack = () => {
         setSelectedPost(null);
-        window.history.pushState({}, '', window.location.pathname);
         if (onBack) onBack();
     };
 
@@ -141,17 +152,7 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
     return (
         <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
-                <div className="mb-8"><button
-    onClick={() => {
-        // 👇 NEW: Force navigation to the clean homepage URL
-        window.location.href = window.location.pathname;
-    }}
-    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
->
-    <Home className="w-5 h-5" />
-    <span>Back to Home</span>
-</button>
-</div>
+                <div className="mb-8"><button onClick={() => window.location.reload()} className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"><Home className="w-5 h-5" /> <span>Back to Home</span></button></div>
                 
                 <div className="text-center mb-16">
                     <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6">Our Blog</h1>
@@ -159,46 +160,45 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
                     <p className="text-xl text-blue-700 max-w-3xl mx-auto">Insights, stories, and musical wisdom from Krishna Flute Academy</p>
                 </div>
 
-                {posts.length > 0 && (
+                {getPopularTags().length > 0 && (
                     <div className="mb-12 text-center">
                         <div className="flex flex-wrap justify-center gap-3 mb-4">
+                            {/* "All Posts" Button */}
                             <button
                                 onClick={() => setSelectedTag(null)}
-                                className={`px-4 py-2 rounded-full transition-all duration-300 border ${
-                                    selectedTag === null
-                                        ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
-                                        : 'bg-white text-blue-600 border-blue-200 hover:border-blue-400'
-                                }`}
+                                className={`px-4 py-2 rounded-full transition-all duration-300 ${selectedTag === null
+                                        ? 'bg-blue-600 text-white shadow-lg'
+                                        : 'bg-white text-blue-600 border border-blue-200 hover:border-blue-400'
+                                    }`}
                             >
                                 All Posts
                             </button>
 
-                            {/* Logic to slice the tags array based on showAllTags state */}
-                            {getAllTags()
-                                .slice(0, showAllTags ? undefined : 8) // Show 8 or ALL
+                            {/* Render Tags (Slice based on state) */}
+                            {getPopularTags()
+                                .slice(0, showAllTags ? undefined : 10) // Show 10 or ALL
                                 .map((tag) => (
                                     <button
                                         key={tag}
-                                        onClick={() => setSelectedTag(tag)}
-                                        className={`px-4 py-2 rounded-full transition-all duration-300 border flex items-center space-x-2 ${
-                                            selectedTag === tag
-                                                ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
-                                                : 'bg-white text-blue-600 border-blue-200 hover:border-blue-400'
-                                        }`}
+                                        onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+                                        className={`px-4 py-2 rounded-full transition-all duration-300 flex items-center space-x-2 ${selectedTag === tag
+                                                ? 'bg-blue-600 text-white shadow-lg'
+                                                : 'bg-white text-blue-600 border border-blue-200 hover:border-blue-400'
+                                            }`}
                                     >
-                                        <Tag className="w-3 h-3" />
+                                        <Tag className="w-4 h-4" />
                                         <span>{tag}</span>
                                     </button>
                                 ))}
                         </div>
 
                         {/* Show More / Show Less Button */}
-                        {getAllTags().length > 8 && (
+                        {getPopularTags().length > 10 && (
                             <button
                                 onClick={() => setShowAllTags(!showAllTags)}
-                                className="text-sm text-blue-500 hover:text-blue-700 underline font-medium"
+                                className="text-sm text-blue-600 font-semibold hover:text-blue-800 underline decoration-blue-300 hover:decoration-blue-800 transition-all mt-2"
                             >
-                                {showAllTags ? 'Show Less Tags' : `Show All Tags (${getAllTags().length})`}
+                                {showAllTags ? 'Show Less Tags' : `Show All Tags (${getPopularTags().length})`}
                             </button>
                         )}
                     </div>
@@ -207,9 +207,9 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
                 {filteredPosts.length === 0 ? (
                     <div className="text-center py-20"><p className="text-2xl text-blue-700">No blog posts available yet.</p></div>
                 ) : (
-                    <div className="flex overflow-x-auto pb-8 gap-6 snap-x snap-mandatory scroll-smooth no-scrollbar">
-                            {filteredPosts.map((post, index) => (
-                                <article key={post.id} onClick={() => handlePostClick(post)} className="bg-white rounded-2xl shadow-xl overflow-hidden cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-2xl group relative flex-shrink-0 w-[85vw] sm:w-[350px] md:w-[400px] snap-center" style={{ animationDelay: `${index * 100}ms` }}>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {filteredPosts.map((post, index) => (
+                            <article key={post.id} onClick={() => handlePostClick(post)} className="bg-white rounded-2xl shadow-xl overflow-hidden cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-2xl group relative" style={{ animationDelay: `${index * 100}ms` }}>
                                 {post.featured_image && (
                                     <div className="relative h-48 overflow-hidden">
                                         <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />

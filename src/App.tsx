@@ -594,32 +594,7 @@ Hello Krishna Flute Academy, I have an inquiry!
     </div>
 )}
 
-{/* 👇 NEW FLOATING EVENT BANNER */}
-            {activeEvent && (
-                <div className="fixed top-20 left-0 right-0 z-[60] flex justify-center px-4 pointer-events-none">
-                    {/* pointer-events-none on parent allows clicking through the empty sides */}
-                    <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-blue-900 px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 pointer-events-auto animate-bounce-slow transform hover:scale-105 transition-all">
-                        <div className="flex items-center gap-2">
-                            <Sparkles className="w-5 h-5 text-white fill-white animate-pulse" />
-                            <span className="font-bold text-sm md:text-base">{activeEvent.title}</span>
-                        </div>
-                        <a 
-                            href={activeEvent.registration_link} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="bg-white text-blue-900 text-xs md:text-sm font-extrabold px-4 py-1.5 rounded-full hover:bg-blue-50 transition-colors shadow-sm whitespace-nowrap"
-                        >
-                            Register Now
-                        </a>
-                        <button 
-                            onClick={() => setActiveEvent(null)}
-                            className="ml-2 bg-black/10 p-1 rounded-full hover:bg-black/20 text-blue-900"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-            )}
+
 
             {/* 👇 NEW EVENT POPUP MODAL */}
             {showEventPopup && activeEvent && (
