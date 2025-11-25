@@ -5,7 +5,7 @@ import { BlogAdmin } from './components/BlogAdmin';
 import { supabase, BlogPost } from './lib/supabase';
 import { Carousel } from 'react-responsive-carousel';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
-
+import { Helmet } from 'react-helmet-async';
 const heroImages = [
     `${import.meta.env.BASE_URL}Toppic.jpg`,
     `${import.meta.env.BASE_URL}hero-image-1.jpg`, // Add your second image
@@ -28,23 +28,19 @@ const BlogSection = ({
     
     // 👇 Helper to copy link without opening the post
     const handleCopyLink = (e: React.MouseEvent, slug: string) => {
-        e.stopPropagation(); // Stop the card from clicking/opening
+        e.stopPropagation();
         const url = `${window.location.origin}/?post=${slug}`;
-        navigator.clipboard.writeText(url).then(() => {
-            alert("Link copied to clipboard!");
-        });
+        navigator.clipboard.writeText(url).then(() => alert("Link copied to clipboard!"));
     };
 
     if (!posts || posts.length === 0) {
         return (
             <section id="blog" className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-blue-50/50">
                 <div className="max-w-7xl mx-auto">
-                    <div className={`text-center mb-16 transform transition-all duration-1000 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
-                        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900 mb-4 md:mb-6">Our Latest Insights</h2>
-                        <div className="w-20 h-1 bg-gradient-to-r from-yellow-500 to-blue-500 mx-auto mb-6 md:mb-8"></div>
-                        <p className="text-lg md:text-xl text-blue-700 max-w-3xl mx-auto">
-                            Check back soon for articles and guides from our master musicians.
-                        </p>
+                    <div className={`text-center mb-16 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}>
+                        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900 mb-4">Our Latest Insights</h2>
+                        <div className="w-20 h-1 bg-gradient-to-r from-yellow-500 to-blue-500 mx-auto mb-6"></div>
+                        <p className="text-lg md:text-xl text-blue-700 max-w-3xl mx-auto">Check back soon for articles.</p>
                     </div>
                 </div>
             </section>
@@ -54,66 +50,49 @@ const BlogSection = ({
     return (
         <section id="blog" className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-blue-50/50">
             <div className="max-w-7xl mx-auto">
-                <div className={`text-center mb-16 transform transition-all duration-1000 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900 mb-4 md:mb-6">Our Latest Insights</h2>
-                    <div className="w-20 h-1 bg-gradient-to-r from-yellow-500 to-blue-500 mx-auto mb-6 md:mb-8"></div>
-                    <p className="text-lg md:text-xl text-blue-700 max-w-3xl mx-auto">
-                        In-depth articles and guides from our master musicians.
-                    </p>
+                <div className={`text-center mb-16 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}>
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900 mb-4">Our Latest Insights</h2>
+                    <div className="w-20 h-1 bg-gradient-to-r from-yellow-500 to-blue-500 mx-auto mb-6"></div>
+                    <p className="text-lg md:text-xl text-blue-700 max-w-3xl mx-auto">In-depth articles and guides from our master musicians.</p>
                 </div>
-                <div className="grid md:grid-cols-3 gap-6 md:gap-10">
+
+                {/* Horizontal Scroll Container */}
+                <div className="flex overflow-x-auto pb-8 gap-6 snap-x snap-mandatory scroll-smooth no-scrollbar">
                     {posts.map((post, index) => (
                         <div
                             key={post.id}
                             onClick={() => onReadPost(post.id)}
-                            className={`relative block bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-[1.03] transition-all duration-500 hover:shadow-2xl group cursor-pointer ${visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+                            className={`relative block bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-[1.02] transition-all duration-500 hover:shadow-2xl group cursor-pointer 
+                                flex-shrink-0 w-[85vw] sm:w-[350px] md:w-[400px] snap-center
+                                ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
                             style={{ transitionDelay: `${index * 150}ms` }}
                         >
                             {post.featured_image && (
                                 <div className="relative h-48 overflow-hidden">
-                                    <img 
-                                        src={post.featured_image} 
-                                        alt={post.title} 
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                    />
+                                    <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                                     <div className="absolute inset-0 bg-blue-900/10 group-hover:bg-blue-900/20 transition-all"></div>
-                                    
-                                    {/* 👇 NEW: Share Button on Top Right of Image */}
-                                    <button
-                                        onClick={(e) => handleCopyLink(e, post.slug || post.id)}
-                                        className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white text-blue-600 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
-                                        title="Copy Link"
-                                    >
+                                    <button onClick={(e) => handleCopyLink(e, post.slug || post.id)} className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white text-blue-600 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" title="Copy Link">
                                         <Share2 className="w-4 h-4" />
                                     </button>
                                 </div>
                             )}
                             <div className="p-6 space-y-3">
-                                <h3 className="text-xl lg:text-2xl font-bold text-blue-900 group-hover:text-blue-700 transition-colors line-clamp-2">
-                                    {post.title}
-                                </h3>
-                                <p className="text-sm md:text-base text-blue-800 leading-relaxed line-clamp-3">
-                                    {post.excerpt}
-                                </p>
+                                <h3 className="text-xl lg:text-2xl font-bold text-blue-900 group-hover:text-blue-700 transition-colors line-clamp-2 whitespace-normal">{post.title}</h3>
+                                <p className="text-sm md:text-base text-blue-800 leading-relaxed line-clamp-3 whitespace-normal">{post.excerpt}</p>
                                 <div className="flex items-center justify-between text-xs text-blue-600 pt-2">
-                                    <span>{new Date(post.published_at || post.created_at).toLocaleDateString()}</span>
-                                    <span className="flex items-center space-x-1">
-                                        <span>{post.view_count} views</span>
-                                    </span>
+                                    <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                                    <span className="flex items-center space-x-1"><span>{post.view_count} views</span></span>
                                 </div>
                                 <span className="flex items-center space-x-2 text-sm font-semibold text-yellow-600 group-hover:text-yellow-700 transition-colors pt-2">
-                                    <span>Read Article</span>
-                                    <ChevronRight className="w-4 h-4" />
+                                    <span>Read Article</span><ChevronRight className="w-4 h-4" />
                                 </span>
                             </div>
                         </div>
                     ))}
                 </div>
+
                 <div className="text-center mt-12">
-                    <button 
-                        onClick={onViewAll}
-                        className="bg-blue-700 text-white px-6 md:px-8 py-3 rounded-full text-base md:text-lg font-semibold hover:bg-blue-800 transition-all duration-300 transform hover:shadow-xl"
-                    >
+                    <button onClick={onViewAll} className="bg-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-800 transition-all shadow-xl">
                         Explore All Articles <BookOpen className="inline-block w-5 h-5 ml-2" />
                     </button>
                 </div>
@@ -142,21 +121,7 @@ function App() {
     const [bannerClosed, setBannerClosed] = useState(false);
     const [testimonials, setTestimonials] = useState<any[]>([]);
     // 👇 ADD THIS MISSING BLOCK 👇
-    useEffect(() => {
-        const fetchActiveEvent = async () => {
-            const { data } = await supabase
-                .from('events')
-                .select('title, registration_link')
-                .eq('is_active', true)
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .maybeSingle();
-                
-            
-            if (data) setActiveEvent(data);
-        };
-        fetchActiveEvent();
-    }, []);
+    
     // 1. Check URL on Load (To open shared links)
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -239,16 +204,25 @@ function App() {
 
         fetchRecentPosts();
     }, []);
+    // --- EFFECTS ---
+
+    // 1. Fetch All Data on Load (Unified to prevent flickering)
     useEffect(() => {
         const fetchData = async () => {
-            // Fetch Posts
-            const { data: posts } = await supabase.from('blog_posts').select('*').eq('published', true).order('published_at', { ascending: false }).limit(3);
+            // A. Fetch Blog Posts
+            const { data: posts } = await supabase
+                .from('blog_posts')
+                .select('*')
+                .eq('published', true)
+                .order('published_at', { ascending: false })
+                .limit(3);
+            
             if (posts) setRecentBlogPosts(posts);
 
-            // Fetch Active Event
+            // B. Fetch Active Event (Selecting ALL necessary fields)
             const { data: eventData } = await supabase
                 .from('events')
-                .select('title, registration_link, image_url, button_text, description') // Get the image too
+                .select('title, registration_link, image_url, button_text, description') // 👈 Ensure button_text is here
                 .eq('is_active', true)
                 .order('created_at', { ascending: false })
                 .limit(1)
@@ -256,12 +230,12 @@ function App() {
             
             if (eventData) {
                 setActiveEvent(eventData);
-                // Show popup after 3 seconds
-                setTimeout(() => {
-                    setShowEventPopup(true);
-                }, 3000);
+                // Only show the popup if it hasn't been manually closed? 
+                // (For now, we just set the timer as requested)
+                setTimeout(() => setShowEventPopup(true), 5000);
             }
-            // 👇 ADD THIS NEW BLOCK HERE 👇
+
+            // C. Fetch Testimonials
             const { data: reviews } = await supabase
                 .from('testimonials')
                 .select('*')
@@ -269,8 +243,8 @@ function App() {
                 .limit(3);
             
             if (reviews) setTestimonials(reviews);
-        
         };
+
         fetchData();
     }, []);
 
@@ -597,49 +571,18 @@ Hello Krishna Flute Academy, I have an inquiry!
 
 
             {/* 👇 NEW EVENT POPUP MODAL */}
+            {/* 4. POPUP MODAL (Dynamic Content) */}
             {showEventPopup && activeEvent && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    {/* Dark Backdrop */}
                     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowEventPopup(false)}></div>
-                    
-                    {/* Modal Card */}
                     <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scaleIn">
-                        {/* Close Button */}
-                        <button 
-                            onClick={() => setShowEventPopup(false)}
-                            className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1.5 hover:bg-black/70 z-10"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-
-                        {/* Poster Image */}
-                        {activeEvent.image_url ? (
-                            <img 
-                                src={activeEvent.image_url} 
-                                alt={activeEvent.title} 
-                                className="w-full h-auto object-cover"
-                            />
-                        ) : (
-                            // Fallback colorful header if no image
-                            <div className="bg-gradient-to-r from-blue-600 to-purple-600 h-32 flex items-center justify-center">
-                                <Sparkles className="w-12 h-12 text-white/30" />
-                            </div>
-                        )}
-
-                        {/* Content */}
+                        <button onClick={() => setShowEventPopup(false)} className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1.5 hover:bg-black/70 z-10"><X className="w-5 h-5" /></button>
+                        {activeEvent.image_url && <img src={activeEvent.image_url} alt={activeEvent.title} className="w-full h-auto object-cover" />}
                         <div className="p-6 text-center">
                             <h3 className="text-2xl font-bold text-blue-900 mb-2">{activeEvent.title}</h3>
-                            <p className="text-gray-600 mb-6 text-sm">
-                                {activeEvent.description || "Join us for this special event! Click below to register."}
-                            </p>
-                            
-                            <a 
-                                href={activeEvent.registration_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block w-full bg-yellow-500 text-blue-900 font-extrabold py-3 rounded-full shadow-lg hover:bg-yellow-400 transition-transform transform hover:scale-105"
-                            >
-                                Register Now
+                            <p className="text-gray-600 mb-6 text-sm">{activeEvent.description || "Join us for this special event!"}</p>
+                            <a href={activeEvent.registration_link} target="_blank" rel="noopener noreferrer" className="block w-full bg-yellow-500 text-blue-900 font-extrabold py-3 rounded-full shadow-lg hover:bg-yellow-400 transition-transform transform hover:scale-105">
+                                {activeEvent.button_text || 'Register Now'}
                             </a>
                         </div>
                     </div>
@@ -728,7 +671,7 @@ Hello Krishna Flute Academy, I have an inquiry!
       </div>
     ))}
   </Carousel>
-</section>
+</section>      
 
             <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
 
@@ -1024,28 +967,60 @@ Hello Krishna Flute Academy, I have an inquiry!
             </section>
 
             {/* Testimonials Section */}
-            <section className="py-20 px-4 bg-yellow-50">
-                <div className="max-w-6xl mx-auto">
-                    <h2 className="text-4xl font-bold text-blue-900 text-center mb-12">Student Love</h2>
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {testimonials.map((t: any) => (
-                            <div key={t.id} className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all">
-                                <div className="flex gap-1 text-yellow-400 mb-4">
-                                    {[...Array(t.rating)].map((_, i) => <Star key={i} className="fill-current w-5 h-5"/>)}
-                                </div>
-                                <p className="text-gray-600 italic mb-6 leading-relaxed">"{t.message}"</p>
-                                <div className="flex items-center gap-3">
-                                    <div className="bg-blue-100 text-blue-600 rounded-full p-2"><User className="w-5 h-5"/></div>
-                                    <div>
-                                        <h4 className="font-bold text-blue-900">{t.name}</h4>
-                                        <p className="text-xs text-gray-500">{t.location}</p>
+            {testimonials.length > 0 && (
+                <section className="py-20 px-4 bg-yellow-50">
+                    <div className="max-w-6xl mx-auto">
+                        {/* Header with Flexbox Layout for Buttons */}
+                        <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+                            <h2 className="text-4xl font-bold text-blue-900">
+                                Student's Love
+                            </h2>
+
+                            <div className="flex gap-3">
+                                {/* Button 1: Write a Review (Replace # with your link) */}
+                                <a 
+                                    href="https://www.google.com/maps/place/Krishna+Flute+Academy/@12.8498601,77.6502361,17z/data=!4m8!3m7!1s0x3bae6d9c05a7322f:0x9f9d6655d2439467!8m2!3d12.8498601!4d77.652811!9m1!1b1!16s%2Fg%2F11m2x5sn66?entry=ttu&g_ep=EgoyMDI1MTExNy4wIKXMDSoASAFQAw%3D%3D" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 bg-blue-600 text-white border-2 border-blue-600 px-4 py-2 rounded-full font-bold hover:bg-blue-700 transition-all shadow-sm hover:shadow-md text-sm"
+                                >
+                                    Write a Review <Star className="w-4 h-4 fill-current" />
+                                </a>
+
+                                {/* Button 2: See More */}
+                                <a 
+                                    href="https://www.google.com/maps/place/Krishna+Flute+Academy/@12.8498601,77.6502361,17z/data=!4m8!3m7!1s0x3bae6d9c05a7322f:0x9f9d6655d2439467!8m2!3d12.8498601!4d77.652811!9m1!1b1!16s%2Fg%2F11m2x5sn66?entry=ttu&g_ep=EgoyMDI1MTExNy4wIKXMDSoASAFQAw%3D%3D" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 bg-white border-2 border-blue-100 text-blue-700 px-4 py-2 rounded-full font-bold hover:bg-blue-50 hover:border-blue-200 transition-all shadow-sm hover:shadow-md text-sm"
+                                >
+                                    See More <ExternalLink className="w-4 h-4" />
+                                </a>
+                            </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-3 gap-6">
+                            {testimonials.map((t: any) => (
+                                <div key={t.id} className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all">
+                                    <div className="flex gap-1 text-yellow-400 mb-4">
+                                        {[...Array(t.rating)].map((_, i) => <Star key={i} className="fill-current w-5 h-5"/>)}
+                                    </div>
+                                    <p className="text-gray-600 italic mb-6 leading-relaxed">"{t.message}"</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-blue-100 text-blue-600 rounded-full p-2">
+                                            <User className="w-5 h-5"/>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-blue-900">{t.name}</h4>
+                                            <p className="text-xs text-gray-500">{t.location}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
 
             {/* Contact Section */}
             <section id="contact" className="py-16 md:py-20 px-4 sm:px-6 lg:px-8">
@@ -1295,7 +1270,7 @@ Hello Krishna Flute Academy, I have an inquiry!
     );
 
     return (
-        <div className="min-h-screen ...">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 overflow-x-hidden">
             {renderCurrentView()}  {/* It gets *called* here */}
             {renderAdminLoginModal()}
         </div>
