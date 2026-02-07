@@ -1,83 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Plus, Edit2, Trash2, Save, X, Eye, EyeOff, Home, 
-    MessageCircle, Mail, Calendar, BookOpen, Sparkles, 
-    Link as LinkIcon, Image as ImageIcon, Star, Quote 
+import {
+    Plus, Edit2, Trash2, Save, X, Eye, EyeOff, Home,
+    MessageCircle, Mail, Calendar, BookOpen, Sparkles,
+    Link as LinkIcon, Image as ImageIcon, Star,
+    ChevronLeft, Play, ExternalLink
 } from 'lucide-react';
-import { supabase, BlogPost } from '../lib/supabase';
+import { supabase, BlogPost, GalleryItem, Inquiry, Event, Testimonial } from '../lib/supabase';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
 // --- INTERFACES ---
-
-interface BlogPost {
-    id: string;
-    created_at: string;
-    title: string;
-    slug: string;
-    content: string;
-    excerpt: string;
-    featured_image: string | null;
-    author_name: string;
-    author_email: string | null;
-    published: boolean;
-    published_at: string | null;
-    view_count: number;
-    tags: string[];
-    updated_at: string;
-}
-
-interface Inquiry {
-    id: string;
-    created_at: string;
-    name: string;
-    email: string;
-    phone: string;
-    course: string;
-    message: string;
-}
-
-interface Event {
-    id: string;
-    created_at: string;
-    title: string;
-    registration_link: string;
-    image_url?: string;
-    button_text?: string;
-    description?: string;
-    is_active: boolean;
-}
-
-interface Testimonial {
-    id: string;
-    created_at: string;
-    name: string;
-    message: string;
-    rating: number;
-    location: string;
-}
+// Using imported interfaces from ../lib/supabase
 
 interface BlogAdminProps {
     onBackToHome: () => void;
 }
 
+
 const SUPABASE_BUCKET_NAME = 'blog_images';
+const GALLERY_BUCKET_NAME = 'gallery';
 
 export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     // --- STATE ---
-    const [activeTab, setActiveTab] = useState<'blog' | 'events' | 'testimonials'>('blog');
+    const [activeTab, setActiveTab] = useState<'blog' | 'events' | 'testimonials' | 'gallery'>('gallery');
 
     // Blog State
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [inquiries, setInquiries] = useState<Inquiry[]>([]);
     const [isEditing, setIsEditing] = useState(false);
     const [currentPost, setCurrentPost] = useState<Partial<BlogPost>>({
-        title: '', slug: '', content: '', excerpt: '', featured_image: '',
-        author_name: 'Krishna Flute Academy', author_email: '', published: false, tags: []
+        title: '', slug: '', content: '', excerpt: '', author_name: 'Krishna Flute Academy', author_email: '', published: false, tags: []
     });
+
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [tagInput, setTagInput] = useState('');
-    
+
     // Event State
     const [events, setEvents] = useState<Event[]>([]);
     const [newEventTitle, setNewEventTitle] = useState('');
@@ -86,15 +43,81 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     const [newEventDesc, setNewEventDesc] = useState('');
     const [eventImageFile, setEventImageFile] = useState<File | null>(null);
     const [isAddingEvent, setIsAddingEvent] = useState(false);
+    const [blogFilter, setBlogFilter] = useState<'published' | 'drafts'>('published');
+
 
     // Testimonial State
     const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
     const [newTestimonial, setNewTestimonial] = useState<Partial<Testimonial>>({ name: '', message: '', rating: 5, location: 'Google Review' });
     const [isAddingTestimonial, setIsAddingTestimonial] = useState(false);
 
+
+    // Gallery State
+    const [gallery, setGallery] = useState<GalleryItem[]>([]);
+    const [isAddingGallery, setIsAddingGallery] = useState(false);
+    const [newGalleryItem, setNewGalleryItem] = useState<Partial<GalleryItem>>({
+        title: '', description: '', media_type: 'image', url: '', is_active: true, sort_order: 0
+    });
+    const [galleryFile, setGalleryFile] = useState<File | null>(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
+
+
     // Loading
     const [loading, setLoading] = useState(false);
     const [fetchingData, setFetchingData] = useState(true);
+    const handleSave = async () => {
+        if (!currentPost.title) return alert("Title is required");
+        setLoading(true);
+
+        try {
+            // 1. Prepare Data
+            const postData = {
+                title: currentPost.title,
+                slug: currentPost.slug || currentPost.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                excerpt: currentPost.excerpt,
+                content: currentPost.content,
+                featured_image: currentPost.featured_image, // Use uploaded URL logic here if needed
+                tags: currentPost.tags,
+                published: currentPost.published || false,
+                // Only update published_at if it's being published now
+                published_at: currentPost.published ? new Date().toISOString() : null,
+                author_name: currentPost.author_name || 'Admin',
+            };
+
+            // 2. Upload Image if new file exists
+            if (imageFile) {
+                const fileName = `blog - ${Date.now()} -${imageFile.name.replace(/\s+/g, '_')} `;
+                const { error: uploadError } = await supabase.storage.from(SUPABASE_BUCKET_NAME).upload(fileName, imageFile);
+
+                if (!uploadError) {
+                    const { data } = supabase.storage.from(SUPABASE_BUCKET_NAME).getPublicUrl(fileName);
+                    postData.featured_image = data.publicUrl;
+                }
+            }
+
+            // 3. Save to Supabase (Insert or Update)
+            if (currentPost.id) {
+                // Update existing
+                const { error } = await supabase.from('blog_posts').update(postData).eq('id', currentPost.id);
+                if (error) throw error;
+            } else {
+                // Insert new
+                const { error } = await supabase.from('blog_posts').insert([postData]);
+                if (error) throw error;
+            }
+
+            // 4. Cleanup
+            alert('Saved successfully!');
+            localStorage.removeItem('kfa_blog_draft');
+            setIsEditing(false);
+            setImageFile(null);
+            fetchPosts(); // Refresh list
+        } catch (error: any) {
+            alert('Error saving post: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // --- EFFECTS ---
     useEffect(() => {
@@ -107,7 +130,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     useEffect(() => {
         const loadAllData = async () => {
             setFetchingData(true);
-            await Promise.all([fetchPosts(), fetchInquiries(), fetchEvents(), fetchTestimonials()]);
+            await Promise.all([fetchPosts(), fetchInquiries(), fetchEvents(), fetchTestimonials(), fetchGallery()]);
             setFetchingData(false);
         };
         loadAllData();
@@ -130,6 +153,11 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         const { data } = await supabase.from('testimonials').select('*').order('created_at', { ascending: false });
         setTestimonials(data || []);
     };
+    const fetchGallery = async () => {
+        const { data } = await supabase.from('gallery_items').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false });
+        setGallery(data || []);
+    };
+
 
     // --- HANDLERS ---
 
@@ -147,10 +175,11 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         setLoading(false);
     };
     const handleDeleteTestimonial = async (id: string) => {
-        if(!window.confirm("Delete this review?")) return;
+        if (!window.confirm("Delete this review?")) return;
         await supabase.from('testimonials').delete().eq('id', id);
         fetchTestimonials();
     };
+
 
     // Events
     const handleSaveEvent = async () => {
@@ -158,8 +187,9 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         setLoading(true);
         let posterUrl = null;
         if (eventImageFile) {
-            const fileName = `event-${Date.now()}-${eventImageFile.name}`;
+            const fileName = `event - ${Date.now()} -${eventImageFile.name.replace(/\s+/g, '_')} `;
             const { error: uploadError } = await supabase.storage.from(SUPABASE_BUCKET_NAME).upload(fileName, eventImageFile);
+
             if (!uploadError) {
                 const { data } = supabase.storage.from(SUPABASE_BUCKET_NAME).getPublicUrl(fileName);
                 posterUrl = data.publicUrl;
@@ -171,7 +201,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
             image_url: posterUrl,
             button_text: newEventBtnText,
             description: newEventDesc,
-            is_active: true 
+            is_active: true
         }]);
         if (error) alert("Error: " + error.message);
         else {
@@ -186,18 +216,102 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         if (!error) fetchEvents();
     };
     const handleDeleteEvent = async (id: string) => {
-        if(!window.confirm("Delete this event?")) return;
+        if (!window.confirm("Delete this event?")) return;
         const { error } = await supabase.from('events').delete().eq('id', id);
         if (!error) fetchEvents();
     };
+
+    // Gallery
+    const handleSaveGallery = async () => {
+        if (newGalleryItem.media_type !== 'video-url' && !galleryFile && !newGalleryItem.url) {
+            return alert("Please select a file or provide a URL.");
+        }
+
+        setLoading(true);
+        setUploadProgress(10);
+
+        try {
+            let mediaUrl = newGalleryItem.url;
+
+            if (galleryFile) {
+                console.log("Starting upload for file:", galleryFile.name, "size:", galleryFile.size);
+                const folder = newGalleryItem.media_type === 'image' ? 'images' : 'videos';
+                const fileName = `${folder} /${Date.now()}-${galleryFile.name.replace(/\s +/g, '_')}`;
+
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from(GALLERY_BUCKET_NAME)
+                    .upload(fileName, galleryFile, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (uploadError) {
+                    console.error("Supabase Storage Upload Error:", uploadError);
+                    throw uploadError;
+                }
+
+                console.log("Upload successful, getting public URL...");
+                const { data } = supabase.storage.from(GALLERY_BUCKET_NAME).getPublicUrl(fileName);
+                mediaUrl = data.publicUrl;
+            }
+
+            setUploadProgress(70);
+            console.log("Saving gallery item to database with URL:", mediaUrl);
+
+            const { error } = await supabase.from('gallery_items').insert([{
+                ...newGalleryItem,
+                url: mediaUrl
+            }]);
+
+            if (error) {
+                console.error("Supabase Database Insert Error:", error);
+                throw error;
+            }
+
+            setUploadProgress(100);
+            await fetchGallery();
+            setNewGalleryItem({ title: '', description: '', media_type: 'image', url: '', is_active: true, sort_order: 0 });
+            setGalleryFile(null);
+            setIsAddingGallery(false);
+            alert("Gallery item added successfully!");
+        } catch (error: any) {
+            console.error("Detailed error in handleSaveGallery:", error);
+            alert("Error saving gallery item: " + (error.message || "Unknown error"));
+        } finally {
+            setLoading(false);
+            setUploadProgress(0);
+        }
+    };
+
+    const handleDeleteGallery = async (id: string, url: string) => {
+        if (!window.confirm("Delete this gallery item?")) return;
+
+        try {
+            // Try to delete from storage if it's a Supabase URL
+            if (url.includes(GALLERY_BUCKET_NAME)) {
+                const path = url.split(`${GALLERY_BUCKET_NAME}/`)[1];
+                if (path) {
+                    await supabase.storage.from(GALLERY_BUCKET_NAME).remove([path]);
+                }
+            }
+
+            const { error } = await supabase.from('gallery_items').delete().eq('id', id);
+            if (error) throw error;
+            fetchGallery();
+        } catch (error: any) {
+            alert("Error deleting: " + error.message);
+        }
+    };
+
 
     // Blog
     const handleCopyLink = (slug: string) => {
         const url = `${window.location.origin}/?post=${slug}`;
         navigator.clipboard.writeText(url).then(() => alert(`Link copied:\n${url}`)).catch(() => alert('Failed to copy'));
     };
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => { if (e.target.files && e.target.files[0]) { setImageFile(e.target.files[0]); setCurrentPost(prev => ({ ...prev, featured_image: null })); } };
-    const handleRemoveImage = () => { setImageFile(null); setCurrentPost(prev => ({ ...prev, featured_image: null })); const fileInput = document.getElementById('postImage') as HTMLInputElement; if (fileInput) fileInput.value = ''; };
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => { if (e.target.files && e.target.files[0]) { setImageFile(e.target.files[0]); setCurrentPost(prev => ({ ...prev, featured_image: undefined })); } };
+    const handleRemoveImage = () => { setImageFile(null); setCurrentPost(prev => ({ ...prev, featured_image: undefined })); const fileInput = document.getElementById('postImage') as HTMLInputElement; if (fileInput) fileInput.value = ''; };
+
     const generateSlug = (title: string) => title?.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     const handleTitleChange = (title: string) => { setCurrentPost(prev => ({ ...prev, title, slug: !prev.id || !prev.slug ? generateSlug(title) : prev.slug })); };
     const handleAddTag = () => { if (!tagInput.trim()) return; const newTags = tagInput.split(',').map(t => t.trim()).filter(t => t !== ''); const unique = newTags.filter(t => !currentPost.tags?.includes(t)); if (unique.length > 0) setCurrentPost(prev => ({ ...prev, tags: [...(prev.tags || []), ...unique] })); setTagInput(''); };
@@ -205,29 +319,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     const handleEdit = (post: BlogPost) => { setCurrentPost(post); setIsEditing(true); window.scrollTo({ top: 0, behavior: 'smooth' }); };
     const handleDelete = async (postId: string) => { if (!window.confirm('Delete post?')) return; await supabase.from('blog_posts').delete().eq('id', postId); fetchPosts(); };
     const handleCancel = () => { localStorage.removeItem('kfa_blog_draft'); setCurrentPost({ title: '', slug: '', content: '', excerpt: '', featured_image: '', author_name: 'Krishna Flute Academy', author_email: '', published: false, tags: [] }); setIsEditing(false); setTagInput(''); setImageFile(null); };
-    
-    const handleSave = async () => {
-        if (!currentPost.title || !currentPost.content) return alert('Title & Content required');
-        setLoading(true);
-        let imageUrl = currentPost.featured_image;
-        try {
-            if (imageFile) {
-                const name = `${Date.now()}-${generateSlug(imageFile.name)}`;
-                const { error: upErr } = await supabase.storage.from(SUPABASE_BUCKET_NAME).upload(name, imageFile);
-                if (upErr) throw upErr;
-                const { data } = supabase.storage.from(SUPABASE_BUCKET_NAME).getPublicUrl(name);
-                imageUrl = data.publicUrl;
-            }
-            const postData = { ...currentPost, featured_image: imageUrl, slug: currentPost.slug || generateSlug(currentPost.title || ''), published_at: currentPost.published && !currentPost.published_at ? new Date().toISOString() : currentPost.published ? currentPost.published_at : null };
-            if (currentPost.id) await supabase.from('blog_posts').update(postData).eq('id', currentPost.id);
-            else await supabase.from('blog_posts').insert([postData]);
-            await fetchPosts();
-            localStorage.removeItem('kfa_blog_draft');
-            const shareUrl = `${window.location.origin}/?post=${postData.slug}`;
-            handleCancel();
-            alert(`Saved!\n\nShare Link:\n${shareUrl}`);
-        } catch (err: any) { console.error(err); alert('Error: ' + err.message); } finally { setLoading(false); }
-    };
+
 
     // --- EDITOR VIEW ---
     if (isEditing) {
@@ -240,24 +332,24 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                     </div>
                     <div className="space-y-6">
                         <input className="w-full p-3 border rounded" placeholder="Title *" value={currentPost.title} onChange={e => handleTitleChange(e.target.value)} />
-                        <input className="w-full p-3 border rounded bg-gray-50" placeholder="Slug" value={currentPost.slug} onChange={e => setCurrentPost({...currentPost, slug: e.target.value})} />
-                        <textarea className="w-full p-3 border rounded" rows={3} placeholder="Excerpt" value={currentPost.excerpt} onChange={e => setCurrentPost({...currentPost, excerpt: e.target.value})} />
+                        <input className="w-full p-3 border rounded bg-gray-50" placeholder="Slug" value={currentPost.slug} onChange={e => setCurrentPost({ ...currentPost, slug: e.target.value })} />
+                        <textarea className="w-full p-3 border rounded" rows={3} placeholder="Excerpt" value={currentPost.excerpt} onChange={e => setCurrentPost({ ...currentPost, excerpt: e.target.value })} />
                         <div className="h-96 pb-12">
-                            <ReactQuill theme="snow" value={currentPost.content || ''} onChange={c => setCurrentPost({...currentPost, content: c})} className="h-full" modules={{ toolbar: [[{ 'header': [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ 'color': [] }, { 'background': [] }], [{ 'align': [] }], [{ 'list': 'ordered' }, { 'list': 'bullet' }], ['link', 'blockquote'], ['clean']] }} />
+                            <ReactQuill theme="snow" value={currentPost.content || ''} onChange={c => setCurrentPost({ ...currentPost, content: c })} className="h-full" modules={{ toolbar: [[{ 'header': [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ 'color': [] }, { 'background': [] }], [{ 'align': [] }], [{ 'list': 'ordered' }, { 'list': 'bullet' }], ['link', 'blockquote'], ['clean']] }} />
                         </div>
                         <div className="pt-4">
                             <label className="block text-sm font-bold mb-2">Featured Image</label>
                             <input type="file" onChange={handleFileChange} />
-                            {currentPost.featured_image && <div className="mt-2 relative w-40"><img src={currentPost.featured_image} className="w-full rounded" /><button onClick={handleRemoveImage} className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"><X size={12}/></button></div>}
+                            {currentPost.featured_image && <div className="mt-2 relative w-40"><img src={currentPost.featured_image} className="w-full rounded" /><button onClick={handleRemoveImage} className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"><X size={12} /></button></div>}
                         </div>
                         <div className="flex items-center gap-2">
                             <input className="border p-2 rounded flex-1" placeholder="Add Tags (comma separated)" value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddTag()} />
-                            <button onClick={handleAddTag} className="bg-blue-600 text-white p-2 rounded"><Plus/></button>
+                            <button onClick={handleAddTag} className="bg-blue-600 text-white p-2 rounded"><Plus /></button>
                         </div>
-                        <div className="flex flex-wrap gap-2">{currentPost.tags?.map(t => <span key={t} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm flex items-center gap-1">{t} <button onClick={() => handleRemoveTag(t)}><X size={12}/></button></span>)}</div>
+                        <div className="flex flex-wrap gap-2">{currentPost.tags?.map(t => <span key={t} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm flex items-center gap-1">{t} <button onClick={() => handleRemoveTag(t)}><X size={12} /></button></span>)}</div>
                         <div className="flex justify-between items-center pt-4 border-t">
-                            <button onClick={() => setCurrentPost(p => ({...p, published: !p.published}))} className={`px-4 py-2 rounded flex items-center gap-2 ${currentPost.published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-                                {currentPost.published ? <Eye size={16}/> : <EyeOff size={16}/>} {currentPost.published ? 'Published' : 'Draft'}
+                            <button onClick={() => setCurrentPost(p => ({ ...p, published: !p.published }))} className={`px-4 py-2 rounded flex items-center gap-2 ${currentPost.published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                                {currentPost.published ? <Eye size={16} /> : <EyeOff size={16} />} {currentPost.published ? 'Published' : 'Draft'}
                             </button>
                             <div className="flex gap-3">
                                 <button onClick={handleSave} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">{loading ? 'Saving...' : 'Save Post'}</button>
@@ -275,8 +367,9 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         <div className="min-h-screen py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                    <button onClick={onBackToHome} className="flex items-center gap-2 text-blue-600 font-bold hover:underline"><Home className="w-5 h-5"/> Back to Home</button>
+                    <button onClick={onBackToHome} className="flex items-center gap-2 text-blue-600 font-bold hover:underline"><Home className="w-5 h-5" /> Back to Home</button>
                     <div className="bg-white p-1 rounded-lg shadow-sm flex flex-wrap justify-center gap-1">
+                        <button onClick={() => setActiveTab('gallery')} className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === 'gallery' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50'}`}>Gallery</button>
                         <button onClick={() => setActiveTab('blog')} className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === 'blog' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50'}`}>Blog</button>
                         <button onClick={() => setActiveTab('events')} className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === 'events' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50'}`}>Events</button>
                         <button onClick={() => setActiveTab('testimonials')} className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === 'testimonials' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50'}`}>Reviews</button>
@@ -288,7 +381,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                     <div className="space-y-8 animate-fadeIn">
                         <div className="flex justify-between items-center">
                             <div><h2 className="text-3xl font-bold text-blue-900">Testimonials</h2><p className="text-gray-600">Manage student reviews</p></div>
-                            <button onClick={() => setIsAddingTestimonial(true)} className="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 flex items-center gap-2"><Plus className="w-5 h-5"/> Add Review</button>
+                            <button onClick={() => setIsAddingTestimonial(true)} className="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 flex items-center gap-2"><Plus className="w-5 h-5" /> Add Review</button>
                         </div>
 
                         {isAddingTestimonial && (
@@ -296,14 +389,14 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                 <h3 className="text-lg font-bold text-blue-900 mb-4">Add New Review</h3>
                                 <div className="grid gap-4">
                                     <div className="grid md:grid-cols-2 gap-4">
-                                        <input placeholder="Student Name" className="border p-3 rounded" value={newTestimonial.name} onChange={e => setNewTestimonial({...newTestimonial, name: e.target.value})} />
-                                        <input placeholder="Location / Role (e.g. 'Google Review')" className="border p-3 rounded" value={newTestimonial.location} onChange={e => setNewTestimonial({...newTestimonial, location: e.target.value})} />
+                                        <input placeholder="Student Name" className="border p-3 rounded" value={newTestimonial.name} onChange={e => setNewTestimonial({ ...newTestimonial, name: e.target.value })} />
+                                        <input placeholder="Location / Role (e.g. 'Google Review')" className="border p-3 rounded" value={newTestimonial.location} onChange={e => setNewTestimonial({ ...newTestimonial, location: e.target.value })} />
                                     </div>
-                                    <textarea placeholder="Review Message..." className="border p-3 rounded" rows={3} value={newTestimonial.message} onChange={e => setNewTestimonial({...newTestimonial, message: e.target.value})} />
+                                    <textarea placeholder="Review Message..." className="border p-3 rounded" rows={3} value={newTestimonial.message} onChange={e => setNewTestimonial({ ...newTestimonial, message: e.target.value })} />
                                     <div className="flex items-center gap-2">
                                         <span className="font-bold text-gray-700">Rating:</span>
-                                        {[1,2,3,4,5].map(star => (
-                                            <button key={star} onClick={() => setNewTestimonial({...newTestimonial, rating: star})} className={`${(newTestimonial.rating || 5) >= star ? 'text-yellow-400' : 'text-gray-300'}`}><Star className="w-6 h-6 fill-current"/></button>
+                                        {[1, 2, 3, 4, 5].map(star => (
+                                            <button key={star} onClick={() => setNewTestimonial({ ...newTestimonial, rating: star })} className={`${(newTestimonial.rating || 5) >= star ? 'text-yellow-400' : 'text-gray-300'}`}><Star className="w-6 h-6 fill-current" /></button>
                                         ))}
                                     </div>
                                 </div>
@@ -317,7 +410,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                         <div className="grid md:grid-cols-2 gap-4">
                             {testimonials.map(t => (
                                 <div key={t.id} className="bg-white p-6 rounded-xl shadow border border-gray-100 relative">
-                                    <button onClick={() => handleDeleteTestimonial(t.id)} className="absolute top-4 right-4 text-red-400 hover:text-red-600 bg-red-50 p-1 rounded"><Trash2 className="w-4 h-4"/></button>
+                                    <button onClick={() => handleDeleteTestimonial(t.id)} className="absolute top-4 right-4 text-red-400 hover:text-red-600 bg-red-50 p-1 rounded"><Trash2 className="w-4 h-4" /></button>
                                     <div className="flex items-center gap-1 mb-2">
                                         {[...Array(5)].map((_, i) => (
                                             <Star key={i} className={`w-4 h-4 ${i < t.rating ? 'text-yellow-400 fill-current' : 'text-gray-200'}`} />
@@ -345,7 +438,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                     <div className="space-y-8 animate-fadeIn">
                         <div className="flex justify-between items-center">
                             <div><h2 className="text-3xl font-bold text-blue-900">Event Popup</h2><p className="text-gray-600">Create a popup event with a poster</p></div>
-                            <button onClick={() => setIsAddingEvent(true)} className="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 flex items-center gap-2"><Plus className="w-5 h-5"/> New Event</button>
+                            <button onClick={() => setIsAddingEvent(true)} className="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 flex items-center gap-2"><Plus className="w-5 h-5" /> New Event</button>
                         </div>
                         {isAddingEvent && (
                             <div className="bg-white p-6 rounded-xl shadow-lg border border-green-100">
@@ -354,7 +447,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                     <div className="space-y-4">
                                         <div><label className="block text-sm font-bold mb-1 text-gray-700">Event Title</label><input placeholder="e.g. Weekend Flute Workshop" className="border p-3 rounded w-full" value={newEventTitle} onChange={e => setNewEventTitle(e.target.value)} /></div>
                                         <div><label className="block text-sm font-bold mb-1 text-gray-700">Button Text</label><input placeholder="e.g. Register Now" className="border p-3 rounded w-full" value={newEventBtnText} onChange={e => setNewEventBtnText(e.target.value)} /></div>
-                                        <div><label className="block text-sm font-bold mb-1 text-gray-700">Link</label><div className="flex items-center border rounded bg-white"><span className="p-3 text-gray-400"><LinkIcon size={16}/></span><input placeholder="https://..." className="p-3 w-full outline-none" value={newEventLink} onChange={e => setNewEventLink(e.target.value)} /></div></div>
+                                        <div><label className="block text-sm font-bold mb-1 text-gray-700">Link</label><div className="flex items-center border rounded bg-white"><span className="p-3 text-gray-400"><LinkIcon size={16} /></span><input placeholder="https://..." className="p-3 w-full outline-none" value={newEventLink} onChange={e => setNewEventLink(e.target.value)} /></div></div>
                                     </div>
                                     <div className="space-y-4">
                                         <div><label className="block text-sm font-bold mb-1 text-gray-700">Short Description</label><textarea placeholder="Popup Description..." className="border p-3 rounded w-full" rows={2} value={newEventDesc} onChange={e => setNewEventDesc(e.target.value)} /></div>
@@ -370,9 +463,9 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                 <tbody className="divide-y">
                                     {events.map(event => (
                                         <tr key={event.id}>
-                                            <td className="p-4">{event.image_url ? <img src={event.image_url} className="w-16 h-16 object-cover rounded shadow-sm" alt="Poster"/> : <div className="w-16 h-16 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400">No Img</div>}</td>
+                                            <td className="p-4">{event.image_url ? <img src={event.image_url} className="w-16 h-16 object-cover rounded shadow-sm" alt="Poster" /> : <div className="w-16 h-16 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400">No Img</div>}</td>
                                             <td className="p-4 font-medium text-gray-900">{event.title}</td>
-                                            <td className="p-4"><button onClick={() => toggleEventStatus(event)} className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-colors ${event.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{event.is_active ? <Eye className="w-3 h-3"/> : <EyeOff className="w-3 h-3"/>} {event.is_active ? 'Active' : 'Inactive'}</button></td>
+                                            <td className="p-4"><button onClick={() => toggleEventStatus(event)} className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-colors ${event.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{event.is_active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />} {event.is_active ? 'Active' : 'Inactive'}</button></td>
                                             <td className="p-4"><button onClick={() => handleDeleteEvent(event.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-lg"><Trash2 className="w-4 h-4" /></button></td>
                                         </tr>
                                     ))}
@@ -383,8 +476,203 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                     </div>
                 )}
 
+                {/* === GALLERY TAB === */}
+                {activeTab === 'gallery' && (
+                    <div className="space-y-8 animate-fadeIn">
+                        <div className="flex justify-between items-center">
+                            <div><h2 className="text-3xl font-bold text-blue-900">Gallery Management</h2><p className="text-gray-600">Upload photos and student performance videos</p></div>
+                            <button onClick={() => setIsAddingGallery(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 flex items-center gap-2"><Plus className="w-5 h-5" /> Add Media</button>
+                        </div>
+
+                        {isAddingGallery && (
+                            <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
+                                <h3 className="text-lg font-bold text-blue-900 mb-4">Add New Gallery Item</h3>
+                                <div className="grid gap-6 md:grid-cols-2">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-bold mb-1 text-gray-700">Media Type</label>
+                                            <select
+                                                className="w-full border p-3 rounded"
+                                                value={newGalleryItem.media_type}
+                                                onChange={e => setNewGalleryItem({ ...newGalleryItem, media_type: e.target.value as any, url: '' })}
+                                            >
+                                                <option value="image">Image Upload</option>
+                                                <option value="video-file">Video File Upload</option>
+                                                <option value="video-url">YouTube / External URL</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold mb-1 text-gray-700">Title (Optional)</label>
+                                            <input placeholder="e.g. Student Performance 2024" className="border p-3 rounded w-full" value={newGalleryItem.title || ''} onChange={e => setNewGalleryItem({ ...newGalleryItem, title: e.target.value })} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold mb-1 text-gray-700">Description (Optional)</label>
+                                            <textarea placeholder="Tell us about this performance..." className="border p-3 rounded w-full" rows={2} value={newGalleryItem.description || ''} onChange={e => setNewGalleryItem({ ...newGalleryItem, description: e.target.value })} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {newGalleryItem.media_type === 'video-url' ? (
+                                            <div>
+                                                <label className="block text-sm font-bold mb-1 text-gray-700">URL</label>
+                                                <input placeholder="https://youtube.com/watch?v=..." className="border p-3 rounded w-full" value={newGalleryItem.url} onChange={e => setNewGalleryItem({ ...newGalleryItem, url: e.target.value })} />
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <label className="block text-sm font-bold mb-1 text-gray-700">
+                                                    Upload {newGalleryItem.media_type === 'image' ? 'Image' : 'Video'}
+                                                </label>
+                                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-50 cursor-pointer relative">
+                                                    <input
+                                                        type="file"
+                                                        accept={newGalleryItem.media_type === 'image' ? "image/*" : "video/*"}
+                                                        onChange={(e) => e.target.files && setGalleryFile(e.target.files[0])}
+                                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                                    />
+                                                    {galleryFile ? (
+                                                        <div className="text-center">
+                                                            <p className="text-green-600 font-bold">{galleryFile.name}</p>
+                                                            <p className="text-xs text-gray-400">{(galleryFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <ImageIcon className="w-8 h-8 mb-2" />
+                                                            <p className="text-sm font-medium">Click or drag to upload</p>
+                                                            <p className="text-xs mt-1">Recommended: max 50MB for videos</p>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {/* Preview Section */}
+                                        {(newGalleryItem.url || galleryFile) && (
+                                            <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                                <p className="text-xs font-bold text-gray-500 uppercase mb-2">Live Preview</p>
+                                                <div className="aspect-video w-full max-w-sm mx-auto rounded-lg overflow-hidden shadow-sm bg-black">
+                                                    {newGalleryItem.media_type === 'image' ? (
+                                                        galleryFile ? (
+                                                            <img src={URL.createObjectURL(galleryFile)} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <img src={newGalleryItem.url || ''} className="w-full h-full object-cover" />
+                                                        )
+                                                    ) : newGalleryItem.media_type === 'video-url' ? (
+                                                        <img
+                                                            src={(() => {
+                                                                const url = newGalleryItem.url || '';
+                                                                let id = '';
+                                                                if (url.includes('youtube.com/embed/')) id = url.split('embed/')[1].split('?')[0];
+                                                                else if (url.includes('youtube.com/watch?v=')) id = url.split('v=')[1].split('&')[0];
+                                                                else if (url.includes('youtu.be/')) id = url.split('/').pop()?.split('?')[0] || '';
+                                                                return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : '';
+                                                            })()}
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => (e.target as HTMLImageElement).style.opacity = '0'}
+                                                        />
+                                                    ) : (
+                                                        galleryFile ? (
+                                                            <video src={URL.createObjectURL(galleryFile) + '#t=1'} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <video src={(newGalleryItem.url || '') + '#t=1'} className="w-full h-full object-cover" />
+                                                        )
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                        <div className="flex gap-4">
+                                            <div className="flex-1">
+                                                <label className="block text-sm font-bold mb-1 text-gray-700">Sort Order</label>
+                                                <input type="number" className="border p-3 rounded w-full" value={newGalleryItem.sort_order} onChange={e => setNewGalleryItem({ ...newGalleryItem, sort_order: parseInt(e.target.value) || 0 })} />
+                                            </div>
+                                            <div className="flex items-end pb-3">
+                                                <label className="flex items-center gap-2 cursor-pointer">
+                                                    <input type="checkbox" checked={newGalleryItem.is_active} onChange={e => setNewGalleryItem({ ...newGalleryItem, is_active: e.target.checked })} className="w-5 h-5 text-blue-600" />
+                                                    <span className="text-sm font-bold text-gray-700">Visible</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {uploadProgress > 0 && (
+                                    <div className="mt-6">
+                                        <div className="flex justify-between text-xs font-bold text-gray-600 mb-1">
+                                            <span>Uploading...</span>
+                                            <span>{uploadProgress}%</span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                            <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="flex gap-3 mt-8 justify-end">
+                                    <button onClick={() => { setIsAddingGallery(false); setGalleryFile(null); }} className="text-gray-600 px-6 py-2 hover:bg-gray-100 rounded font-medium">Cancel</button>
+                                    <button onClick={handleSaveGallery} disabled={loading} className="bg-blue-600 text-white px-8 py-2 rounded-lg hover:bg-blue-700 font-bold shadow-lg transition-all disabled:opacity-50">
+                                        {loading ? 'Saving Content...' : 'Add to Gallery'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                            {gallery.map(item => (
+                                <div key={item.id} className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 group relative">
+                                    <div className="aspect-video relative bg-gray-100">
+                                        {item.media_type === 'image' ? (
+                                            <img src={item.url} className="w-full h-full object-cover" alt={item.title || ''} />
+                                        ) : item.media_type === 'video-url' ? (
+                                            <div className="relative w-full h-full">
+                                                <img
+                                                    src={(() => {
+                                                        const url = item.url;
+                                                        let id = '';
+                                                        if (url.includes('youtube.com/embed/')) id = url.split('embed/')[1].split('?')[0];
+                                                        else if (url.includes('v=')) id = url.split('v=')[1].split('&')[0];
+                                                        else if (url.includes('youtu.be/')) id = url.split('/').pop()?.split('?')[0] || '';
+                                                        return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : '';
+                                                    })()}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                                                    <Play className="w-8 h-8 text-white drop-shadow-lg" />
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="relative w-full h-full">
+                                                <video src={item.url + '#t=1'} className="w-full h-full object-cover" preload="metadata" />
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                                                    <Play className="w-8 h-8 text-white drop-shadow-lg" />
+                                                </div>
+                                            </div>
+                                        )}
+                                        <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => handleDeleteGallery(item.id, item.url)} className="bg-red-500 text-white p-2 rounded-lg shadow-lg hover:bg-red-600" title="Delete"><Trash2 size={16} /></button>
+                                        </div>
+                                        {!item.is_active && (
+                                            <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
+                                                <span className="bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded uppercase">Hidden</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="p-3">
+                                        <h4 className="font-bold text-blue-900 text-sm truncate">{item.title || 'Untitled Item'}</h4>
+                                        <p className="text-[10px] text-gray-500 uppercase font-bold mt-1">{item.media_type.replace('-', ' ')}</p>
+                                    </div>
+                                </div>
+                            ))}
+                            {gallery.length === 0 && !isAddingGallery && (
+                                <div className="col-span-full py-20 text-center bg-gray-100 rounded-2xl border-2 border-dashed border-gray-200">
+                                    <ImageIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                    <p className="text-gray-500 font-medium">Your gallery is empty</p>
+                                    <button onClick={() => setIsAddingGallery(true)} className="text-blue-600 font-bold hover:underline mt-2">Add your first photo or video</button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* === BLOG TAB === */}
                 {activeTab === 'blog' && (
+
                     <div className="space-y-12 animate-fadeIn">
                         <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
                             <div className="flex items-center gap-3 mb-6 pb-4 border-b"><MessageCircle className="w-6 h-6 text-blue-600" /><h2 className="text-2xl font-bold text-blue-900">Student Inquiries</h2></div>
@@ -400,7 +688,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                                     <td className="p-3 text-sm font-bold text-gray-800">{inq.name}<div className="text-xs text-gray-500 font-normal">{inq.email}</div></td>
                                                     <td className="p-3"><span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">{inq.course}</span></td>
                                                     <td className="p-3 text-sm text-gray-600 max-w-xs truncate">{inq.message}</td>
-                                                    <td className="p-3"><a href={`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(`Hi ${inq.name}, this is from Krishna Flute Academy regarding your inquiry for the ${inq.course}.`)}`} target="_blank" rel="noreferrer" className="text-green-600 bg-green-50 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 w-fit hover:bg-green-100"><MessageCircle size={14}/> Chat</a></td>
+                                                    <td className="p-3"><a href={`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(`Hi ${inq.name}, this is from Krishna Flute Academy regarding your inquiry for the ${inq.course}.`)}`} target="_blank" rel="noreferrer" className="text-green-600 bg-green-50 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 w-fit hover:bg-green-100"><MessageCircle size={14} /> Chat</a></td>
                                                 </tr>
                                             );
                                         })}
@@ -410,14 +698,14 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                         </div>
                         <div>
                             <div className="flex justify-between items-center mb-6">
-                                <div className="flex items-center gap-3"><BookOpen className="w-6 h-6 text-blue-600"/><h2 className="text-2xl font-bold text-blue-900">Blog Posts</h2></div>
+                                <div className="flex items-center gap-3"><BookOpen className="w-6 h-6 text-blue-600" /><h2 className="text-2xl font-bold text-blue-900">Blog Posts</h2></div>
                                 <button onClick={() => {
                                     const draft = localStorage.getItem('kfa_blog_draft');
                                     if (draft && window.confirm("Resume saved draft?")) setCurrentPost(JSON.parse(draft));
                                     else setCurrentPost({ title: '', slug: '', content: '', excerpt: '', featured_image: '', author_name: 'Krishna Flute Academy', author_email: '', published: false, tags: [] });
                                     setIsEditing(true);
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
-                                }} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow hover:bg-blue-700"><Plus className="w-5 h-5"/> New Post</button>
+                                }} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow hover:bg-blue-700"><Plus className="w-5 h-5" /> New Post</button>
                             </div>
                             <div className="grid gap-4">
                                 {posts.map(post => (
@@ -427,15 +715,38 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                                             <div className="flex gap-3 text-sm text-gray-500 mt-1">
                                                 <span>{new Date(post.created_at).toLocaleDateString()}</span>
                                                 <span>•</span>
-                                                <span className={post.published ? "text-green-600 font-medium" : "text-orange-500 font-medium"}>{post.published ? 'Published' : 'Draft'}</span>
+                                                <span className={post.published ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                                                    {post.published ? 'Published' : 'Draft'}
+                                                </span>
                                                 <span>•</span>
                                                 <span>{post.view_count} views</span>
                                             </div>
                                         </div>
+
                                         <div className="flex gap-2">
-                                            <button onClick={() => handleCopyLink(post.slug)} className="p-2 text-green-600 bg-green-50 rounded hover:bg-green-100" title="Copy Link"><LinkIcon size={18}/></button>
-                                            <button onClick={() => handleEdit(post)} className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100"><Edit2 size={18}/></button>
-                                            <button onClick={() => handleDelete(post.id)} className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"><Trash2 size={18}/></button>
+                                            <button
+                                                onClick={() => handleCopyLink(post.slug || post.id)}
+                                                className="p-2 text-green-600 bg-green-50 rounded hover:bg-green-100 transition-colors"
+                                                title="Copy Link"
+                                            >
+                                                <LinkIcon size={18} />
+                                            </button>
+
+                                            <button
+                                                onClick={() => handleEdit(post)}
+                                                className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                                                title="Edit Post"
+                                            >
+                                                <Edit2 size={18} />
+                                            </button>
+
+                                            <button
+                                                onClick={() => handleDelete(post.id)}
+                                                className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors"
+                                                title="Delete Post"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
@@ -443,6 +754,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                         </div>
                     </div>
                 )}
+
             </div>
         </div>
     );

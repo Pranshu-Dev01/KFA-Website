@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, User, Eye, Tag, ArrowLeft, Home, Share2 } from 'lucide-react';
 import { supabase, BlogPost } from '../lib/supabase';
-
+import { Helmet } from 'react-helmet-async';
 interface BlogProps {
     initialPostId?: string | null;
     onBack?: () => void;
@@ -13,7 +13,6 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
     const [loading, setLoading] = useState(true);
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
     const [showAllTags, setShowAllTags] = useState(false); // 👈 New State
-
     // --- Helper: Copy Link ---
     const handleCopyLink = (e: React.MouseEvent, slug: string) => {
         e.stopPropagation();
@@ -29,7 +28,7 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
         
         // Count occurrences
         posts.forEach(post => {
-            post.tags.forEach(tag => {
+            (post.tags || []).forEach(tag => {
                 tagCounts[tag] = (tagCounts[tag] || 0) + 1;
             });
         });
@@ -120,8 +119,25 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
 
     // --- SINGLE POST VIEW ---
     if (selectedPost) {
+        const shareImage = selectedPost.featured_image || `${window.location.origin}/image.png`;
+        const shareUrl = `${window.location.origin}/?post=${selectedPost.slug || selectedPost.id}`;
+
         return (
             <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
+                <Helmet>
+                    <title>{selectedPost.title} | Krishna Flute Academy</title>
+                    <meta name="description" content={selectedPost.excerpt} />
+                    <meta property="og:type" content="article" />
+                    <meta property="og:title" content={selectedPost.title} />
+                    <meta property="og:description" content={selectedPost.excerpt} />
+                    <meta property="og:image" content={shareImage} />
+                    <meta property="og:url" content={shareUrl} />
+                    <meta name="twitter:card" content="summary_large_image" />
+                    <meta name="twitter:title" content={selectedPost.title} />
+                    <meta name="twitter:description" content={selectedPost.excerpt} />
+                    <meta name="twitter:image" content={shareImage} />
+                </Helmet>
+
                 <div className="max-w-4xl mx-auto">
                     <button onClick={handleBack} className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 mb-8 transition-colors">
                         <ArrowLeft className="w-5 h-5" /> <span>Back to all posts</span>
@@ -139,7 +155,7 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
                                 <div className="flex items-center gap-2"><Eye className="w-5 h-5" /> <span>{selectedPost.view_count} views</span></div>
                             </div>
                             <div className="flex flex-wrap gap-2 mb-8">
-                                {selectedPost.tags.map((tag, i) => <span key={i} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">{tag}</span>)}
+                                {(selectedPost.tags || []).map((tag, i) => <span key={i} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">{tag}</span>)}
                             </div>
                             <div className="prose prose-lg prose-blue max-w-none text-blue-800 font-montserrat [&_strong]:font-extrabold [&_strong]:text-blue-900 [&_b]:font-extrabold [&_b]:text-blue-900 [&_h1]:font-extrabold [&_h2]:font-bold [&_h3]:font-bold [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&_li::marker]:text-blue-900 [&_li::marker]:font-bold" dangerouslySetInnerHTML={{ __html: selectedPost.content }} />
                         </div>
@@ -152,6 +168,29 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
     // --- LIST VIEW ---
     return (
         <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
+            <Helmet>
+                <title>Blog | Krishna Flute Academy</title>
+                <meta name="description" content="Read the latest insights and flute tutorials from Krishna Flute Academy." />
+                <meta property="og:title" content="Blog | Krishna Flute Academy" />
+                <meta property="og:image" content={`${window.location.origin}/image.png`} />
+            </Helmet>
+            <Helmet>
+                    <title>{selectedPost.title} | Krishna Flute Academy</title>
+                    <meta name="description" content={selectedPost.excerpt} />
+                    
+                    {/* Open Graph / Facebook / WhatsApp */}
+                    <meta property="og:type" content="article" />
+                    <meta property="og:title" content={selectedPost.title} />
+                    <meta property="og:description" content={selectedPost.excerpt} />
+                    <meta property="og:image" content={shareImage} />
+                    <meta property="og:url" content={shareUrl} />
+                    
+                    {/* Twitter */}
+                    <meta name="twitter:card" content="summary_large_image" />
+                    <meta name="twitter:title" content={selectedPost.title} />
+                    <meta name="twitter:description" content={selectedPost.excerpt} />
+                    <meta name="twitter:image" content={shareImage} />
+                </Helmet>
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8"><button
     onClick={() => {
