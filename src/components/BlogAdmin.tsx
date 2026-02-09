@@ -138,8 +138,15 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
 
     // --- FETCH FUNCTIONS ---
     const fetchPosts = async () => {
-        const { data } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false });
-        setPosts(data || []);
+        try {
+            const { data, error } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false });
+            if (error) throw error;
+            // Strict filtering for valid post objects
+            const validPosts = (data || []).filter(p => p && typeof p === 'object' && p.title);
+            setPosts(validPosts);
+        } catch (err) {
+            console.error('Error fetching admin posts:', err);
+        }
     };
     const fetchInquiries = async () => {
         const { data } = await supabase.from('inquiries').select('*').order('created_at', { ascending: false });
@@ -331,29 +338,72 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                         <button onClick={handleCancel}><X /></button>
                     </div>
                     <div className="space-y-6">
-                        <input className="w-full p-3 border rounded" placeholder="Title *" value={currentPost.title} onChange={e => handleTitleChange(e.target.value)} />
-                        <input className="w-full p-3 border rounded bg-gray-50" placeholder="Slug" value={currentPost.slug} onChange={e => setCurrentPost({ ...currentPost, slug: e.target.value })} />
-                        <textarea className="w-full p-3 border rounded" rows={3} placeholder="Excerpt" value={currentPost.excerpt} onChange={e => setCurrentPost({ ...currentPost, excerpt: e.target.value })} />
+                        <input
+                            className="w-full p-3 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                            placeholder="Title *"
+                            value={currentPost?.title || ''}
+                            onChange={e => handleTitleChange(e.target.value)}
+                        />
+                        <input
+                            className="w-full p-3 border rounded bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                            placeholder="Slug"
+                            value={currentPost?.slug || ''}
+                            onChange={e => setCurrentPost(prev => ({ ...prev, slug: e.target.value }))}
+                        />
+                        <textarea
+                            className="w-full p-3 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                            rows={3}
+                            placeholder="Excerpt"
+                            value={currentPost?.excerpt || ''}
+                            onChange={e => setCurrentPost(prev => ({ ...prev, excerpt: e.target.value }))}
+                        />
                         <div className="h-96 pb-12">
-                            <ReactQuill theme="snow" value={currentPost.content || ''} onChange={c => setCurrentPost({ ...currentPost, content: c })} className="h-full" modules={{ toolbar: [[{ 'header': [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ 'color': [] }, { 'background': [] }], [{ 'align': [] }], [{ 'list': 'ordered' }, { 'list': 'bullet' }], ['link', 'blockquote'], ['clean']] }} />
+                            <ReactQuill
+                                theme="snow"
+                                value={currentPost?.content || ''}
+                                onChange={c => setCurrentPost(prev => ({ ...prev, content: c }))}
+                                className="h-full"
+                                modules={{ toolbar: [[{ 'header': [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ 'color': [] }, { 'background': [] }], [{ 'align': [] }], [{ 'list': 'ordered' }, { 'list': 'bullet' }], ['link', 'blockquote'], ['clean']] }}
+                            />
                         </div>
                         <div className="pt-4">
                             <label className="block text-sm font-bold mb-2">Featured Image</label>
                             <input type="file" onChange={handleFileChange} />
-                            {currentPost.featured_image && <div className="mt-2 relative w-40"><img src={currentPost.featured_image} className="w-full rounded" /><button onClick={handleRemoveImage} className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"><X size={12} /></button></div>}
+                            {currentPost?.featured_image && (
+                                <div className="mt-2 relative w-40">
+                                    <img src={currentPost.featured_image} className="w-full rounded shadow-sm" alt="Preview" />
+                                    <button onClick={handleRemoveImage} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-colors">
+                                        <X size={12} />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                         <div className="flex items-center gap-2">
-                            <input className="border p-2 rounded flex-1" placeholder="Add Tags (comma separated)" value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddTag()} />
-                            <button onClick={handleAddTag} className="bg-blue-600 text-white p-2 rounded"><Plus /></button>
+                            <input className="border p-2 rounded flex-1 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Add Tags (comma separated)" value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddTag()} />
+                            <button onClick={handleAddTag} className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition-colors"><Plus /></button>
                         </div>
-                        <div className="flex flex-wrap gap-2">{currentPost.tags?.map(t => <span key={t} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm flex items-center gap-1">{t} <button onClick={() => handleRemoveTag(t)}><X size={12} /></button></span>)}</div>
+                        <div className="flex flex-wrap gap-2">
+                            {(currentPost?.tags || []).map(t => (
+                                <span key={t} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border border-blue-200">
+                                    {t}
+                                    <button onClick={() => handleRemoveTag(t)} className="hover:text-red-600 transition-colors">
+                                        <X size={14} />
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
                         <div className="flex justify-between items-center pt-4 border-t">
-                            <button onClick={() => setCurrentPost(p => ({ ...p, published: !p.published }))} className={`px-4 py-2 rounded flex items-center gap-2 ${currentPost.published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-                                {currentPost.published ? <Eye size={16} /> : <EyeOff size={16} />} {currentPost.published ? 'Published' : 'Draft'}
+                            <button onClick={() => setCurrentPost(prev => ({ ...prev, published: !prev.published }))} className={`px-4 py-2 rounded-full flex items-center gap-2 font-bold transition-all ${currentPost?.published ? 'bg-green-100 text-green-800 shadow-sm' : 'bg-gray-100 text-gray-600'}`}>
+                                {currentPost?.published ? <Eye size={16} /> : <EyeOff size={16} />}
+                                {currentPost?.published ? 'Published' : 'Draft'}
                             </button>
                             <div className="flex gap-3">
-                                <button onClick={handleSave} disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">{loading ? 'Saving...' : 'Save Post'}</button>
-                                <button onClick={handleCancel} className="border px-6 py-2 rounded hover:bg-gray-50">Cancel</button>
+                                <button onClick={handleSave} disabled={loading} className="bg-blue-600 text-white px-8 py-2 rounded-full hover:bg-blue-700 font-bold shadow-lg transition-all active:scale-95 disabled:opacity-50">
+                                    {loading ? 'Saving...' : 'Save Post'}
+                                </button>
+                                <button onClick={handleCancel} className="border border-gray-300 px-8 py-2 rounded-full hover:bg-gray-50 transition-colors font-bold">
+                                    Cancel
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -700,9 +750,19 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center gap-3"><BookOpen className="w-6 h-6 text-blue-600" /><h2 className="text-2xl font-bold text-blue-900">Blog Posts</h2></div>
                                 <button onClick={() => {
-                                    const draft = localStorage.getItem('kfa_blog_draft');
-                                    if (draft && window.confirm("Resume saved draft?")) setCurrentPost(JSON.parse(draft));
-                                    else setCurrentPost({ title: '', slug: '', content: '', excerpt: '', featured_image: '', author_name: 'Krishna Flute Academy', author_email: '', published: false, tags: [] });
+                                    const rawDraft = localStorage.getItem('kfa_blog_draft');
+                                    let draft = null;
+                                    try {
+                                        draft = rawDraft ? JSON.parse(rawDraft) : null;
+                                    } catch (e) {
+                                        console.error('Corrupt draft in localStorage:', e);
+                                    }
+
+                                    if (draft && typeof draft === 'object' && draft.title && window.confirm(`Resume draft: "${draft.title}"?`)) {
+                                        setCurrentPost(draft);
+                                    } else {
+                                        setCurrentPost({ title: '', slug: '', content: '', excerpt: '', featured_image: '', author_name: 'Krishna Flute Academy', author_email: '', published: false, tags: [] });
+                                    }
                                     setIsEditing(true);
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                 }} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow hover:bg-blue-700"><Plus className="w-5 h-5" /> New Post</button>

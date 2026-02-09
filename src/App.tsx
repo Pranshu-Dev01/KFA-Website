@@ -78,11 +78,11 @@ const BlogSection = ({
                                 </div>
                             )}
                             <div className="p-6 space-y-3">
-                                <h3 className="text-xl lg:text-2xl font-bold text-blue-900 group-hover:text-blue-700 transition-colors line-clamp-2 whitespace-normal">{post.title}</h3>
-                                <p className="text-sm md:text-base text-blue-800 leading-relaxed line-clamp-3 whitespace-normal">{post.excerpt}</p>
+                                <h3 className="text-xl lg:text-2xl font-bold text-blue-900 group-hover:text-blue-700 transition-colors line-clamp-2 whitespace-normal">{post?.title || 'Untitled Post'}</h3>
+                                <p className="text-sm md:text-base text-blue-800 leading-relaxed line-clamp-3 whitespace-normal">{post?.excerpt || ''}</p>
                                 <div className="flex items-center justify-between text-xs text-blue-600 pt-2">
-                                    <span>{new Date(post.created_at).toLocaleDateString()}</span>
-                                    <span className="flex items-center space-x-1"><span>{post.view_count} views</span></span>
+                                    <span>{post?.created_at ? new Date(post.created_at).toLocaleDateString() : 'Recent'}</span>
+                                    <span className="flex items-center space-x-1"><span>{post?.view_count || 0} views</span></span>
                                 </div>
                                 <span className="flex items-center space-x-2 text-sm font-semibold text-yellow-600 group-hover:text-yellow-700 transition-colors pt-2">
                                     <span>Read Article</span><ChevronRight className="w-4 h-4" />
@@ -173,7 +173,11 @@ function App() {
                 .eq('published', true)
                 .order('published_at', { ascending: false })
                 .limit(3);
-            if (posts) setRecentBlogPosts(posts);
+            if (posts) {
+                // Strict filtering for valid blog posts
+                const validPosts = posts.filter(p => p && typeof p === 'object' && p.title && p.id);
+                setRecentBlogPosts(validPosts);
+            }
 
             // B. Fetch Active Event
             const { data: eventData } = await supabase
@@ -195,7 +199,10 @@ function App() {
                 .select('*')
                 .order('created_at', { ascending: false })
                 .limit(3);
-            if (reviews) setTestimonials(reviews);
+            if (reviews) {
+                const validReviews = reviews.filter(r => r && typeof r === 'object' && r.name && r.content);
+                setTestimonials(validReviews);
+            }
 
             // D. Fetch Gallery Items
             const { data: gallery } = await supabase
@@ -203,7 +210,10 @@ function App() {
                 .select('*')
                 .eq('is_active', true)
                 .order('created_at', { ascending: false });
-            if (gallery) setGalleryItems(gallery);
+            if (gallery) {
+                const validGallery = gallery.filter(g => g && typeof g === 'object' && g.url);
+                setGalleryItems(validGallery);
+            }
         };
         fetchData();
     }, []);

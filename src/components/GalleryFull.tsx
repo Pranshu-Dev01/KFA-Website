@@ -46,7 +46,7 @@ export const GalleryFull: React.FC<GalleryFullProps> = ({ onBack }) => {
                 .order('created_at', { ascending: false });
 
             // Merge dynamic items with static ones
-            const dynamicItems = data || [];
+            const dynamicItems = (data || []).filter(item => item && typeof item === 'object' && item.url);
             setItems([...dynamicItems, ...staticVideos]);
             setLoading(false);
         };
