@@ -86,12 +86,16 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
 
             // 2. Upload Image if new file exists
             if (imageFile) {
-                const fileName = `blog - ${Date.now()} -${imageFile.name.replace(/\s+/g, '_')} `;
+                // Remove spaces and special chars, keep it cleaner
+                const safeName = imageFile.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_.]/g, '');
+                const fileName = `blog-${Date.now()}-${safeName}`;
                 const { error: uploadError } = await supabase.storage.from(SUPABASE_BUCKET_NAME).upload(fileName, imageFile);
 
                 if (!uploadError) {
                     const { data } = supabase.storage.from(SUPABASE_BUCKET_NAME).getPublicUrl(fileName);
                     postData.featured_image = data.publicUrl;
+                } else {
+                    console.error("Upload error:", uploadError);
                 }
             }
 
@@ -194,7 +198,8 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         setLoading(true);
         let posterUrl = null;
         if (eventImageFile) {
-            const fileName = `event - ${Date.now()} -${eventImageFile.name.replace(/\s+/g, '_')} `;
+            const safeName = eventImageFile.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_.]/g, '');
+            const fileName = `event-${Date.now()}-${safeName}`;
             const { error: uploadError } = await supabase.storage.from(SUPABASE_BUCKET_NAME).upload(fileName, eventImageFile);
 
             if (!uploadError) {
@@ -367,16 +372,56 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                             />
                         </div>
                         <div className="pt-4">
-                            <label className="block text-sm font-bold mb-2">Featured Image</label>
-                            <input type="file" onChange={handleFileChange} />
-                            {currentPost?.featured_image && (
-                                <div className="mt-2 relative w-40">
-                                    <img src={currentPost.featured_image} className="w-full rounded shadow-sm" alt="Preview" />
-                                    <button onClick={handleRemoveImage} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-colors">
-                                        <X size={12} />
-                                    </button>
-                                </div>
-                            )}
+                            <label className="block text-sm font-bold mb-2 text-gray-700">Featured Image</label>
+
+                            <div className="relative group overflow-hidden">
+                                {!imageFile && !currentPost?.featured_image ? (
+                                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer relative bg-gray-50">
+                                        <input
+                                            type="file"
+                                            id="postImage"
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                            className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                        />
+                                        <ImageIcon className="w-8 h-8 mb-2 text-blue-500" />
+                                        <p className="font-bold text-gray-700">Select Featured Image</p>
+                                        <p className="text-xs text-gray-400 mt-1">PNG, JPG or WEBP up to 5MB</p>
+                                    </div>
+                                ) : (
+                                    <div className="relative inline-block group">
+                                        <img
+                                            src={imageFile ? URL.createObjectURL(imageFile) : currentPost.featured_image}
+                                            className="max-h-64 rounded-xl shadow-lg border-4 border-white ring-1 ring-gray-200"
+                                            alt="Preview"
+                                        />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-3">
+                                            <button
+                                                onClick={() => document.getElementById('postImage')?.click()}
+                                                className="bg-white text-gray-900 p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
+                                                title="Change Image"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button
+                                                onClick={handleRemoveImage}
+                                                className="bg-red-500 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
+                                                title="Remove Image"
+                                            >
+                                                <X size={16} />
+                                            </button>
+                                        </div>
+                                        {/* Hidden input for changing image */}
+                                        <input
+                                            type="file"
+                                            id="postImage"
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                            className="hidden"
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <input className="border p-2 rounded flex-1 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Add Tags (comma separated)" value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddTag()} />
