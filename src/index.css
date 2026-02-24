@@ -48,65 +48,84 @@ body {
     radial-gradient(circle at 75% 75%, rgba(234, 179, 8, 0.1) 0%, transparent 50%);
 }
 
-/* 1. FORCE ALIGNMENT: Use Flexbox to align everything in a straight line */
-.ql-toolbar.ql-snow {
-  display: flex !important;
-  align-items: center !important;
-  flex-wrap: wrap !important;
-  padding: 12px !important;
-  gap: 8px !important; /* Uniform spacing */
+/* Tiptap / ProseMirror Editor Styles */
+.tiptap table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
 }
 
-/* 2. Fix the Group containers */
-.ql-toolbar.ql-snow .ql-formats {
-  display: flex !important;
-  align-items: center !important;
-  margin-right: 12px !important;
+.tiptap table td,
+.tiptap table th {
+  min-width: 1em;
+  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
 }
 
-/* 3. MAKE BUTTONS BIGGER */
-.ql-toolbar.ql-snow button {
-  width: 32px !important;
-  height: 32px !important;
-  padding: 4px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  float: none !important; /* Stop the "jumping" behavior */
+.tiptap table th {
+  font-weight: bold;
+  text-align: left;
+  background-color: #f8fafc;
 }
 
-.ql-toolbar.ql-snow button svg {
-  width: 22px !important;
-  height: 22px !important;
+.tiptap table .selectedCell:after {
+  z-index: 2;
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: rgba(200, 200, 255, 0.4);
+  pointer-events: none;
 }
 
-/* 4. FIX THE DROPDOWNS (Color, Align, Header) */
-/* This forces the dropdowns to match the height of the buttons */
-.ql-toolbar.ql-snow .ql-picker {
-  height: 32px !important;
-  display: flex !important;
-  align-items: center !important;
-  margin-top: 0 !important;
+.tiptap table .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  z-index: 20;
+  background-color: #3b82f6;
+  pointer-events: none;
 }
 
-.ql-toolbar.ql-snow .ql-picker-label {
-  height: 32px !important;
-  padding: 0 6px !important;
-  display: flex !important;
-  align-items: center !important;
-  border: 1px solid transparent !important;
+/* ProseMirror focus / placeholder */
+.tiptap:focus {
+  outline: none;
 }
 
-/* 5. FIX THE TINY COLOR ICON */
-/* This specifically targets that small icon in your screenshot */
-.ql-toolbar.ql-snow .ql-picker-label svg {
-  width: 22px !important;
-  height: 22px !important;
-  position: relative !important;
-  top: 0 !important;
+/* Horizontal Rule */
+.tiptap hr {
+  border: none;
+  border-top: 2px solid #e2e8f0;
+  margin: 2rem 0;
 }
 
-/* 6. Wider dropdown for "Heading" */
-.ql-toolbar.ql-snow .ql-picker.ql-header {
-  width: 110px !important;
+/* Link Styling */
+.tiptap a {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Blockquote */
+.tiptap blockquote {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1rem;
+  margin-left: 0;
+  font-style: italic;
+  color: #475569;
+}
+
+/* Images */
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  display: block;
+  margin: 1.5rem auto;
 }

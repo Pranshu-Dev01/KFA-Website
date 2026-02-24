@@ -121,7 +121,7 @@ function App() {
     const [formPhone, setFormPhone] = useState('');
     const [formCourse, setFormCourse] = useState('Select a course');
     const [formMessage, setFormMessage] = useState('');
-    const [activeEvent, setActiveEvent] = useState<{ title: string, registration_link: string, image_url?: string } | null>(null);
+    const [activeEvent, setActiveEvent] = useState<{ title: string, registration_link: string, image_url?: string, button_text?: string, description?: string } | null>(null);
     const [showEventPopup, setShowEventPopup] = useState(false);
     const [bannerClosed, setBannerClosed] = useState(false);
     const [testimonials, setTestimonials] = useState<any[]>([]);
@@ -303,8 +303,7 @@ Hello Krishna Flute Academy, I have an inquiry!
         setIsAdmin(false);
         setCurrentView('home');
     };
-    // Helper to check if banner is visible
-    const isBannerVisible = activeEvent && !bannerClosed;
+
     const renderHomeView = () => {
         // 👇 Define the logic here
         const isBannerVisible = activeEvent && !bannerClosed;
@@ -560,7 +559,6 @@ Hello Krishna Flute Academy, I have an inquiry!
                                     alt={`Hero Slide ${index + 1}`}
                                     className="w-full h-full object-cover"
                                     loading={index === 0 ? "eager" : "lazy"}
-                                    fetchPriority={index === 0 ? "high" : "low"}
                                 />
 
                                 {/* Semi-transparent black overlay */}
@@ -901,6 +899,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                                                     id: `static-${index}`,
                                                     url: embedUrl,
                                                     media_type: 'video-url',
+                                                    thumbnail_url: null,
                                                     title: null,
                                                     description: null,
                                                     is_active: true,

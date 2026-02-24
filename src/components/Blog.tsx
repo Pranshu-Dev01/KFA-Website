@@ -54,7 +54,7 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
                     .order('published_at', { ascending: false });
 
                 if (postsError) throw postsError;
-                
+
                 // FIX 1: Filter out any null/invalid posts immediately
                 const validPosts = (postsData || []).filter(p => p && p.title && p.id);
                 setPosts(validPosts);
@@ -79,7 +79,7 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
                             .select('*')
                             .or(`id.eq.${isUUID ? initialPostId : '00000000-0000-0000-0000-000000000000'},slug.eq.${initialPostId}`)
                             .maybeSingle();
-                        
+
                         if (specificPost && specificPost.title) {
                             targetPost = specificPost;
                         }
@@ -171,14 +171,14 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
                     <Helmet>
                         <title>{selectedPost.title} | Krishna Flute Academy</title>
                         <meta name="description" content={selectedPost.excerpt} />
-                        
+
                         {/* Open Graph / Facebook / WhatsApp */}
                         <meta property="og:type" content="article" />
                         <meta property="og:title" content={selectedPost.title} />
                         <meta property="og:description" content={selectedPost.excerpt} />
                         <meta property="og:image" content={selectedPost.featured_image || `${window.location.origin}/image.png`} />
                         <meta property="og:url" content={`${window.location.origin}/?post=${selectedPost.slug || selectedPost.id}`} />
-                        
+
                         {/* Twitter */}
                         <meta name="twitter:card" content="summary_large_image" />
                         <meta name="twitter:title" content={selectedPost.title} />
@@ -205,7 +205,7 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
                             <div className="flex flex-wrap gap-2 mb-8">
                                 {(selectedPost.tags || []).map((tag, i) => <span key={i} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">{tag}</span>)}
                             </div>
-                            <div className="prose prose-lg prose-blue max-w-none text-blue-800 font-montserrat [&_strong]:font-extrabold [&_strong]:text-blue-900 [&_b]:font-extrabold [&_b]:text-blue-900 [&_h1]:font-extrabold [&_h2]:font-bold [&_h3]:font-bold [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&_li::marker]:text-blue-900 [&_li::marker]:font-bold" dangerouslySetInnerHTML={{ __html: selectedPost.content }} />
+                            <div className="prose prose-lg prose-blue max-w-none text-blue-800 font-montserrat [&_strong]:font-extrabold [&_strong]:text-blue-900 [&_b]:font-extrabold [&_b]:text-blue-900 [&_h1]:font-extrabold [&_h2]:font-bold [&_h3]:font-bold [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&_li::marker]:text-blue-900 [&_li::marker]:font-bold tiptap" dangerouslySetInnerHTML={{ __html: selectedPost.content }} />
                         </div>
                     </article>
                 </div>
@@ -219,7 +219,7 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
                 <Helmet>
                     <title>Blog | Krishna Flute Academy</title>
                     <meta name="description" content="Read the latest insights and flute tutorials from Krishna Flute Academy." />
-                    
+
                     {/* Open Graph / Facebook / WhatsApp */}
                     <meta property="og:type" content="website" />
                     <meta property="og:title" content="Blog | Krishna Flute Academy" />

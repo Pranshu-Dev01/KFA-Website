@@ -1,13 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
     Plus, Edit2, Trash2, Save, X, Eye, EyeOff, Home,
     MessageCircle, Mail, Calendar, BookOpen, Sparkles,
     Link as LinkIcon, Image as ImageIcon, Star,
-    ChevronLeft, Play, ExternalLink
+    ChevronLeft, Play, ExternalLink, Bold, Italic, List, ListOrdered,
+    Type, Quote, Undo, Redo,
+    Table as TableIcon, Columns, Rows, Trash
 } from 'lucide-react';
 import { supabase, BlogPost, GalleryItem, Inquiry, Event, Testimonial } from '../lib/supabase';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableCell from '@tiptap/extension-table-cell';
+import TableHeader from '@tiptap/extension-table-header';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
 
 // --- INTERFACES ---
 // Using imported interfaces from ../lib/supabase
@@ -15,6 +23,193 @@ import 'react-quill/dist/quill.snow.css';
 interface BlogAdminProps {
     onBackToHome: () => void;
 }
+
+// --- COMPONENTS ---
+const MenuBar = ({ editor, onImageUpload }: { editor: any, onImageUpload: () => void }) => {
+    if (!editor) return null;
+
+    return (
+        <div className="flex flex-wrap gap-1 p-2 border-b bg-gray-50 rounded-t-xl sticky top-0 z-10 transition-all">
+            <button
+                onClick={() => editor.chain().focus().toggleBold().run()}
+                disabled={!editor.can().chain().focus().toggleBold().run()}
+                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('bold') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
+                title="Bold"
+            >
+                <Bold size={18} />
+            </button>
+            <button
+                onClick={() => editor.chain().focus().toggleItalic().run()}
+                disabled={!editor.can().chain().focus().toggleItalic().run()}
+                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('italic') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
+                title="Italic"
+            >
+                <Italic size={18} />
+            </button>
+            <button
+                onClick={() => editor.chain().focus().toggleStrike().run()}
+                disabled={!editor.can().chain().focus().toggleStrike().run()}
+                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('strike') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
+                title="Strike"
+            >
+                <Type size={18} className="line-through" />
+            </button>
+
+            <div className="w-px h-6 bg-gray-300 mx-1 self-center" />
+
+            <button
+                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 1 }) ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
+                title="Heading 1"
+            >
+                <span className="font-bold text-sm">H1</span>
+            </button>
+            <button
+                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
+                title="Heading 2"
+            >
+                <span className="font-bold text-sm">H2</span>
+            </button>
+            <button
+                onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 3 }) ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
+                title="Heading 3"
+            >
+                <span className="font-bold text-sm">H3</span>
+            </button>
+
+            <div className="w-px h-6 bg-gray-300 mx-1 self-center" />
+
+            <button
+                onClick={() => editor.chain().focus().toggleBulletList().run()}
+                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('bulletList') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
+                title="Bullet List"
+            >
+                <List size={18} />
+            </button>
+            <button
+                onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('orderedList') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
+                title="Ordered List"
+            >
+                <ListOrdered size={18} />
+            </button>
+            <button
+                onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('blockquote') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
+                title="Blockquote"
+            >
+                <Quote size={18} />
+            </button>
+
+            <div className="w-px h-6 bg-gray-300 mx-1 self-center" />
+
+            <button
+                onClick={() => {
+                    const url = window.prompt('URL');
+                    if (url) editor.chain().focus().setLink({ href: url }).run();
+                }}
+                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('link') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
+                title="Add Link"
+            >
+                <LinkIcon size={18} />
+            </button>
+
+            <button
+                onClick={onImageUpload}
+                className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
+                title="Upload Image"
+            >
+                <ImageIcon size={18} />
+            </button>
+
+            <div className="w-px h-6 bg-gray-300 mx-1 self-center" />
+
+            {/* Table Controls */}
+            <button
+                onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+                className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
+                title="Insert Table"
+            >
+                <TableIcon size={18} />
+            </button>
+
+            {editor.isActive('table') && (
+                <>
+                    <button
+                        onClick={() => editor.chain().focus().addColumnBefore().run()}
+                        className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
+                        title="Add Column Before"
+                    >
+                        <Columns size={18} className="rotate-180" />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().addColumnAfter().run()}
+                        className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
+                        title="Add Column After"
+                    >
+                        <Columns size={18} />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().addRowBefore().run()}
+                        className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
+                        title="Add Row Before"
+                    >
+                        <Rows size={18} className="rotate-180" />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().addRowAfter().run()}
+                        className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
+                        title="Add Row After"
+                    >
+                        <Rows size={18} />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().deleteColumn().run()}
+                        className="p-1.5 rounded hover:bg-gray-200 text-red-500"
+                        title="Delete Column"
+                    >
+                        <Trash size={14} className="inline mr-0.5" /><Columns size={18} />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().deleteRow().run()}
+                        className="p-1.5 rounded hover:bg-gray-200 text-red-500"
+                        title="Delete Row"
+                    >
+                        <Trash size={14} className="inline mr-0.5" /><Rows size={18} />
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().deleteTable().run()}
+                        className="p-1.5 rounded hover:bg-gray-200 text-red-600"
+                        title="Delete Table"
+                    >
+                        <Trash2 size={18} />
+                    </button>
+                </>
+            )}
+
+            <div className="flex-1" />
+
+            <button
+                onClick={() => editor.chain().focus().undo().run()}
+                disabled={!editor.can().chain().focus().undo().run()}
+                className="p-1.5 rounded hover:bg-gray-200 text-gray-400 disabled:opacity-30"
+                title="Undo"
+            >
+                <Undo size={18} />
+            </button>
+            <button
+                onClick={() => editor.chain().focus().redo().run()}
+                disabled={!editor.can().chain().focus().redo().run()}
+                className="p-1.5 rounded hover:bg-gray-200 text-gray-400 disabled:opacity-30"
+                title="Redo"
+            >
+                <Redo size={18} />
+            </button>
+        </div>
+    );
+};
 
 
 const SUPABASE_BUCKET_NAME = 'blog_images';
@@ -65,6 +260,78 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     // Loading
     const [loading, setLoading] = useState(false);
     const [fetchingData, setFetchingData] = useState(true);
+    // --- TIPTAP EDITOR SETUP ---
+    const editor = useEditor({
+        extensions: [
+            StarterKit,
+            Table.configure({
+                resizable: true,
+            }),
+            TableRow,
+            TableHeader,
+            TableCell,
+            Image.configure({
+                HTMLAttributes: {
+                    class: 'rounded-lg max-w-full h-auto shadow-md mx-auto my-4',
+                },
+            }),
+            Link.configure({
+                openOnClick: false,
+                HTMLAttributes: {
+                    class: 'text-blue-600 underline hover:text-blue-800',
+                },
+            }),
+        ],
+        content: currentPost?.content || '',
+        onUpdate: ({ editor }) => {
+            setCurrentPost(prev => ({ ...prev, content: editor.getHTML() }));
+        },
+        editorProps: {
+            attributes: {
+                class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none max-w-none p-4 min-h-[300px]',
+            },
+        },
+    });
+
+    // Update editor content when currentPost.content changes externally (like when loading a post)
+    useEffect(() => {
+        if (editor && currentPost.content !== editor.getHTML()) {
+            editor.commands.setContent(currentPost.content || '');
+        }
+    }, [currentPost.content, editor]);
+
+    // --- CUSTOM IMAGE HANDLER FOR TIPTAP ---
+    const handleImageUpload = useCallback(() => {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+
+        input.onchange = async () => {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const safeName = file.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_.]/g, '');
+                const fileName = `blog-content-${Date.now()}-${safeName}`;
+
+                try {
+                    setLoading(true);
+                    const { error: uploadError } = await supabase.storage.from(SUPABASE_BUCKET_NAME).upload(fileName, file);
+                    if (uploadError) throw uploadError;
+
+                    const { data } = supabase.storage.from(SUPABASE_BUCKET_NAME).getPublicUrl(fileName);
+                    const url = data.publicUrl;
+
+                    if (editor) {
+                        editor.chain().focus().setImage({ src: url }).run();
+                    }
+                } catch (error: any) {
+                    alert('Error uploading image: ' + error.message);
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+    }, [editor]);
     const handleSave = async () => {
         if (!currentPost.title) return alert("Title is required");
         setLoading(true);
@@ -362,14 +629,11 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                             value={currentPost?.excerpt || ''}
                             onChange={e => setCurrentPost(prev => ({ ...prev, excerpt: e.target.value }))}
                         />
-                        <div className="h-96 pb-12">
-                            <ReactQuill
-                                theme="snow"
-                                value={currentPost?.content || ''}
-                                onChange={c => setCurrentPost(prev => ({ ...prev, content: c }))}
-                                className="h-full"
-                                modules={{ toolbar: [[{ 'header': [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ 'color': [] }, { 'background': [] }], [{ 'align': [] }], [{ 'list': 'ordered' }, { 'list': 'bullet' }], ['link', 'blockquote'], ['clean']] }}
-                            />
+                        <div className="border rounded-xl bg-white overflow-hidden shadow-sm flex flex-col tiptap">
+                            <MenuBar editor={editor} onImageUpload={handleImageUpload} />
+                            <div className="overflow-y-auto max-h-[500px]">
+                                <EditorContent editor={editor} />
+                            </div>
                         </div>
                         <div className="pt-4">
                             <label className="block text-sm font-bold mb-2 text-gray-700">Featured Image</label>
