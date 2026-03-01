@@ -8,9 +8,9 @@ import { GalleryFull } from './components/GalleryFull';
 import { Carousel } from 'react-responsive-carousel';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 const heroImages = [
-    `${import.meta.env.BASE_URL}Toppic.jpg`,
-    `${import.meta.env.BASE_URL}hero-image-1.jpg`, // Add your second image
-    `${import.meta.env.BASE_URL}hero-image-2.jpg`, // Add your third image
+    '/Toppic.jpg',
+    '/hero-image-1.jpg', // Add your second image
+    '/hero-image-2.jpg', // Add your third image
     // Add more images as needed
 ];
 // Blog Section Component
@@ -362,7 +362,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                             {/* Logo Section - Left */}
                             <div className="flex items-center space-x-3">
                                 <img
-                                    src={`${import.meta.env.BASE_URL}image.png`}
+                                    src={'/image.png'}
                                     alt="Krishna Flute Academy Logo"
                                     className="h-10 w-10 md:h-12 md:w-12 object-contain"
                                 />
@@ -708,7 +708,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                             <div className={`relative transform transition-all duration-1000 delay-200 ${visibleSections['founder'] ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0'}`}>
                                 <div className="relative overflow-hidden rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105">
                                     <img
-                                        src={`${import.meta.env.BASE_URL}guru.jpg`}
+                                        src={'/guru.jpg'}
                                         alt="Founder of Krishna Flute Academy"
                                         className="w-full h-auto object-center block"
                                         loading="lazy"
@@ -776,7 +776,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                         <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-10">
                             <div className={`md:w-1/2 transform transition-all duration-1000 delay-200 ${visibleSections['flutes'] ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0'}`}>
                                 <img
-                                    src={`${import.meta.env.BASE_URL}flutes_custom.jpg`}
+                                    src={'/flutes_custom.jpg'}
                                     alt="Handcrafted Flutes"
                                     className="w-full rounded-xl shadow-2xl"
                                     loading="lazy"
@@ -1007,7 +1007,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                         </div>
                         <div className="text-right mt-8 md:mt-12">
                             <a
-                                href={`${import.meta.env.BASE_URL}KFA-Brochure.pdf`}
+                                href={'/KFA-Brochure.pdf'}
                                 download="Krishna-Flute-Academy-Brochure.pdf"
                                 className="text-blue-700 hover:text-blue-900 font-semibold transition-colors group inline-flex items-center"
                                 aria-label="Download our brochure to learn more"
@@ -1209,7 +1209,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                             <div>
                                 <div className="flex items-center space-x-3 mb-4">
                                     <img
-                                        src={`${import.meta.env.BASE_URL}image.png`}
+                                        src={'/image.png'}
                                         alt="Krishna Flute Academy"
                                         className="h-10 w-10 object-contain"
                                     />

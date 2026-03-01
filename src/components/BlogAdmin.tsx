@@ -5,7 +5,9 @@ import {
     Link as LinkIcon, Image as ImageIcon, Star,
     ChevronLeft, Play, ExternalLink, Bold, Italic, List, ListOrdered,
     Type, Quote, Undo, Redo,
-    Table as TableIcon, Columns, Rows, Trash
+    Table as TableIcon, Columns, Rows, Trash,
+    Underline as UnderlineIcon, AlignLeft, AlignCenter, AlignRight, AlignJustify,
+    Highlighter, Palette, ArrowUpDown, ChevronDown
 } from 'lucide-react';
 import { supabase, BlogPost, GalleryItem, Inquiry, Event, Testimonial } from '../lib/supabase';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -16,6 +18,13 @@ import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
+import Underline from '@tiptap/extension-underline';
+import TextStyle from '@tiptap/extension-text-style';
+import FontFamily from '@tiptap/extension-font-family';
+import Color from '@tiptap/extension-color';
+import Highlight from '@tiptap/extension-highlight';
+import TextAlign from '@tiptap/extension-text-align';
+import { LineHeight } from '../lib/tiptap-extensions';
 
 // --- INTERFACES ---
 // Using imported interfaces from ../lib/supabase
@@ -28,185 +37,201 @@ interface BlogAdminProps {
 const MenuBar = ({ editor, onImageUpload }: { editor: any, onImageUpload: () => void }) => {
     if (!editor) return null;
 
+    const fonts = ['Inter', 'Roboto', 'Georgia', 'Courier New', 'Arial', 'Times New Roman'];
+    const colors = ['#000000', '#EE4444', '#22AA55', '#3366FF', '#FF9900', '#9933FF'];
+    const lineHeights = ['1.0', '1.2', '1.4', '1.6', '1.8', '2.0'];
+
     return (
-        <div className="flex flex-wrap gap-1 p-2 border-b bg-gray-50 rounded-t-xl sticky top-0 z-10 transition-all">
-            <button
-                onClick={() => editor.chain().focus().toggleBold().run()}
-                disabled={!editor.can().chain().focus().toggleBold().run()}
-                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('bold') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
-                title="Bold"
-            >
-                <Bold size={18} />
-            </button>
-            <button
-                onClick={() => editor.chain().focus().toggleItalic().run()}
-                disabled={!editor.can().chain().focus().toggleItalic().run()}
-                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('italic') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
-                title="Italic"
-            >
-                <Italic size={18} />
-            </button>
-            <button
-                onClick={() => editor.chain().focus().toggleStrike().run()}
-                disabled={!editor.can().chain().focus().toggleStrike().run()}
-                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('strike') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
-                title="Strike"
-            >
-                <Type size={18} className="line-through" />
-            </button>
+        <div className="flex flex-wrap items-center gap-0.5 p-1.5 border-b bg-white rounded-t-xl sticky top-0 z-20 backdrop-blur-md bg-white/90 shadow-sm">
+            {/* Formatting Group */}
+            <div className="flex items-center gap-0.5 px-2 border-r border-gray-100">
+                <button
+                    onClick={() => editor.chain().focus().toggleBold().run()}
+                    disabled={!editor.can().chain().focus().toggleBold().run()}
+                    className={`p-1.5 rounded-md hover:bg-gray-100 transition-colors ${editor.isActive('bold') ? 'bg-blue-50 text-blue-600 shadow-inner' : 'text-gray-600'}`}
+                    title="Bold (Ctrl+B)"
+                >
+                    <Bold size={17} />
+                </button>
+                <button
+                    onClick={() => editor.chain().focus().toggleItalic().run()}
+                    disabled={!editor.can().chain().focus().toggleItalic().run()}
+                    className={`p-1.5 rounded-md hover:bg-gray-100 transition-colors ${editor.isActive('italic') ? 'bg-blue-50 text-blue-600 shadow-inner' : 'text-gray-600'}`}
+                    title="Italic (Ctrl+I)"
+                >
+                    <Italic size={17} />
+                </button>
+                <button
+                    onClick={() => editor.chain().focus().toggleUnderline().run()}
+                    className={`p-1.5 rounded-md hover:bg-gray-100 transition-colors ${editor.isActive('underline') ? 'bg-blue-50 text-blue-600 shadow-inner' : 'text-gray-600'}`}
+                    title="Underline (Ctrl+U)"
+                >
+                    <UnderlineIcon size={17} />
+                </button>
+                <button
+                    onClick={() => editor.chain().focus().toggleStrike().run()}
+                    disabled={!editor.can().chain().focus().toggleStrike().run()}
+                    className={`p-1.5 rounded-md hover:bg-gray-100 transition-colors ${editor.isActive('strike') ? 'bg-blue-50 text-blue-600 shadow-inner' : 'text-gray-600'}`}
+                    title="Strike"
+                >
+                    <Type size={17} className="line-through" />
+                </button>
+            </div>
 
-            <div className="w-px h-6 bg-gray-300 mx-1 self-center" />
+            {/* Typography Group */}
+            <div className="flex items-center gap-1.5 px-2 border-r border-gray-100">
+                <select
+                    onChange={e => editor.chain().focus().setFontFamily(e.target.value).run()}
+                    className="h-8 text-[13px] border-none bg-transparent hover:bg-gray-100 rounded-md px-1 cursor-pointer focus:ring-0 font-medium text-gray-700 outline-none min-w-[100px]"
+                    value={editor.getAttributes('textStyle').fontFamily || 'Inter'}
+                >
+                    {fonts.map(font => (
+                        <option key={font} value={font} style={{ fontFamily: font }}>{font}</option>
+                    ))}
+                </select>
 
-            <button
-                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 1 }) ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
-                title="Heading 1"
-            >
-                <span className="font-bold text-sm">H1</span>
-            </button>
-            <button
-                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
-                title="Heading 2"
-            >
-                <span className="font-bold text-sm">H2</span>
-            </button>
-            <button
-                onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 3 }) ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
-                title="Heading 3"
-            >
-                <span className="font-bold text-sm">H3</span>
-            </button>
-
-            <div className="w-px h-6 bg-gray-300 mx-1 self-center" />
-
-            <button
-                onClick={() => editor.chain().focus().toggleBulletList().run()}
-                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('bulletList') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
-                title="Bullet List"
-            >
-                <List size={18} />
-            </button>
-            <button
-                onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('orderedList') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
-                title="Ordered List"
-            >
-                <ListOrdered size={18} />
-            </button>
-            <button
-                onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('blockquote') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
-                title="Blockquote"
-            >
-                <Quote size={18} />
-            </button>
-
-            <div className="w-px h-6 bg-gray-300 mx-1 self-center" />
-
-            <button
-                onClick={() => {
-                    const url = window.prompt('URL');
-                    if (url) editor.chain().focus().setLink({ href: url }).run();
-                }}
-                className={`p-1.5 rounded hover:bg-gray-200 ${editor.isActive('link') ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}
-                title="Add Link"
-            >
-                <LinkIcon size={18} />
-            </button>
-
-            <button
-                onClick={onImageUpload}
-                className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
-                title="Upload Image"
-            >
-                <ImageIcon size={18} />
-            </button>
-
-            <div className="w-px h-6 bg-gray-300 mx-1 self-center" />
-
-            {/* Table Controls */}
-            <button
-                onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
-                className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
-                title="Insert Table"
-            >
-                <TableIcon size={18} />
-            </button>
-
-            {editor.isActive('table') && (
-                <>
+                <div className="flex items-center gap-0.5">
+                    {colors.map(color => (
+                        <button
+                            key={color}
+                            onClick={() => editor.chain().focus().setColor(color).run()}
+                            className="p-1 group relative"
+                            title={`Color: ${color}`}
+                        >
+                            <div
+                                className={`w-4 h-4 rounded-full border border-gray-200 transition-transform ${editor.getAttributes('textStyle').color === color ? 'scale-125 ring-2 ring-blue-200 ring-offset-1' : 'hover:scale-110'}`}
+                                style={{ backgroundColor: color }}
+                            />
+                        </button>
+                    ))}
                     <button
-                        onClick={() => editor.chain().focus().addColumnBefore().run()}
-                        className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
-                        title="Add Column Before"
+                        onClick={() => editor.chain().focus().toggleHighlight().run()}
+                        className={`p-1.5 rounded-md hover:bg-gray-100 transition-colors ${editor.isActive('highlight') ? 'bg-yellow-100 text-yellow-700' : 'text-gray-600'}`}
+                        title="Highlight"
                     >
-                        <Columns size={18} className="rotate-180" />
+                        <Highlighter size={16} />
                     </button>
-                    <button
-                        onClick={() => editor.chain().focus().addColumnAfter().run()}
-                        className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
-                        title="Add Column After"
+                </div>
+            </div>
+
+            {/* Blocks & Lists Group */}
+            <div className="flex items-center gap-0.5 px-2 border-r border-gray-100">
+                <button
+                    onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                    className={`p-1.5 rounded-md hover:bg-gray-100 transition-colors ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-100 font-bold' : 'text-gray-600 font-semibold'}`}
+                    title="Heading 2"
+                >
+                    <span className="text-[13px]">H2</span>
+                </button>
+                <button
+                    onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                    className={`p-1.5 rounded-md hover:bg-gray-100 transition-colors ${editor.isActive('heading', { level: 3 }) ? 'bg-gray-100 font-bold' : 'text-gray-600 font-semibold'}`}
+                    title="Heading 3"
+                >
+                    <span className="text-[13px]">H3</span>
+                </button>
+                <button
+                    onClick={() => editor.chain().focus().toggleBulletList().run()}
+                    className={`p-1.5 rounded-md hover:bg-gray-100 transition-colors ${editor.isActive('bulletList') ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
+                    title="Bullet List"
+                >
+                    <List size={17} />
+                </button>
+                <button
+                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                    className={`p-1.5 rounded-md hover:bg-gray-100 transition-colors ${editor.isActive('orderedList') ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
+                    title="Ordered List"
+                >
+                    <ListOrdered size={17} />
+                </button>
+            </div>
+
+            {/* Alignment & Spacing Group */}
+            <div className="flex items-center gap-0.5 px-2 border-r border-gray-100">
+                <button
+                    onClick={() => editor.chain().focus().setTextAlign('left').run()}
+                    className={`p-1.5 rounded-md hover:bg-gray-100 ${editor.isActive({ textAlign: 'left' }) ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
+                    title="Align Left"
+                >
+                    <AlignLeft size={17} />
+                </button>
+                <button
+                    onClick={() => editor.chain().focus().setTextAlign('center').run()}
+                    className={`p-1.5 rounded-md hover:bg-gray-100 ${editor.isActive({ textAlign: 'center' }) ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
+                    title="Align Center"
+                >
+                    <AlignCenter size={17} />
+                </button>
+                <button
+                    onClick={() => editor.chain().focus().setTextAlign('right').run()}
+                    className={`p-1.5 rounded-md hover:bg-gray-100 ${editor.isActive({ textAlign: 'right' }) ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
+                    title="Align Right"
+                >
+                    <AlignRight size={17} />
+                </button>
+
+                <div className="flex items-center gap-1 ml-1 pl-1 border-l border-gray-50">
+                    <ArrowUpDown size={14} className="text-gray-400" />
+                    <select
+                        onChange={e => editor.chain().focus().setLineHeight(e.target.value).run()}
+                        className="text-[12px] border-none bg-transparent hover:bg-gray-100 rounded-md px-1 cursor-pointer focus:ring-0 text-gray-700 outline-none w-12"
+                        value={editor.getAttributes('paragraph').lineHeight || '1.6'}
                     >
-                        <Columns size={18} />
-                    </button>
-                    <button
-                        onClick={() => editor.chain().focus().addRowBefore().run()}
-                        className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
-                        title="Add Row Before"
-                    >
-                        <Rows size={18} className="rotate-180" />
-                    </button>
-                    <button
-                        onClick={() => editor.chain().focus().addRowAfter().run()}
-                        className="p-1.5 rounded hover:bg-gray-200 text-gray-600"
-                        title="Add Row After"
-                    >
-                        <Rows size={18} />
-                    </button>
-                    <button
-                        onClick={() => editor.chain().focus().deleteColumn().run()}
-                        className="p-1.5 rounded hover:bg-gray-200 text-red-500"
-                        title="Delete Column"
-                    >
-                        <Trash size={14} className="inline mr-0.5" /><Columns size={18} />
-                    </button>
-                    <button
-                        onClick={() => editor.chain().focus().deleteRow().run()}
-                        className="p-1.5 rounded hover:bg-gray-200 text-red-500"
-                        title="Delete Row"
-                    >
-                        <Trash size={14} className="inline mr-0.5" /><Rows size={18} />
-                    </button>
-                    <button
-                        onClick={() => editor.chain().focus().deleteTable().run()}
-                        className="p-1.5 rounded hover:bg-gray-200 text-red-600"
-                        title="Delete Table"
-                    >
-                        <Trash2 size={18} />
-                    </button>
-                </>
-            )}
+                        {lineHeights.map(lh => (
+                            <option key={lh} value={lh}>{lh}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            {/* Insertion Group */}
+            <div className="flex items-center gap-0.5 px-2">
+                <button
+                    onClick={() => {
+                        const url = window.prompt('URL');
+                        if (url) editor.chain().focus().setLink({ href: url }).run();
+                    }}
+                    className={`p-1.5 rounded-md hover:bg-gray-100 ${editor.isActive('link') ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
+                    title="Add Link"
+                >
+                    <LinkIcon size={17} />
+                </button>
+                <button
+                    onClick={onImageUpload}
+                    className="p-1.5 rounded-md hover:bg-gray-100 text-gray-600"
+                    title="Upload Image"
+                >
+                    <ImageIcon size={17} />
+                </button>
+                <button
+                    onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+                    className="p-1.5 rounded-md hover:bg-gray-100 text-gray-600"
+                    title="Insert Table"
+                >
+                    <TableIcon size={17} />
+                </button>
+            </div>
 
             <div className="flex-1" />
 
-            <button
-                onClick={() => editor.chain().focus().undo().run()}
-                disabled={!editor.can().chain().focus().undo().run()}
-                className="p-1.5 rounded hover:bg-gray-200 text-gray-400 disabled:opacity-30"
-                title="Undo"
-            >
-                <Undo size={18} />
-            </button>
-            <button
-                onClick={() => editor.chain().focus().redo().run()}
-                disabled={!editor.can().chain().focus().redo().run()}
-                className="p-1.5 rounded hover:bg-gray-200 text-gray-400 disabled:opacity-30"
-                title="Redo"
-            >
-                <Redo size={18} />
-            </button>
+            <div className="flex items-center gap-0.5 px-2">
+                <button
+                    onClick={() => editor.chain().focus().undo().run()}
+                    disabled={!editor.can().chain().focus().undo().run()}
+                    className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 disabled:opacity-30"
+                    title="Undo"
+                >
+                    <Undo size={17} />
+                </button>
+                <button
+                    onClick={() => editor.chain().focus().redo().run()}
+                    disabled={!editor.can().chain().focus().redo().run()}
+                    className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 disabled:opacity-30"
+                    title="Redo"
+                >
+                    <Redo size={17} />
+                </button>
+            </div>
         </div>
     );
 };
@@ -264,6 +289,18 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
     const editor = useEditor({
         extensions: [
             StarterKit,
+            Underline,
+            TextStyle,
+            FontFamily,
+            Color,
+            Highlight.configure({ multicolor: true }),
+            TextAlign.configure({
+                types: ['heading', 'paragraph'],
+            }),
+            LineHeight.configure({
+                types: ['heading', 'paragraph'],
+                defaultLineHeight: '1.6',
+            }),
             Table.configure({
                 resizable: true,
             }),
@@ -272,13 +309,13 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
             TableCell,
             Image.configure({
                 HTMLAttributes: {
-                    class: 'rounded-lg max-w-full h-auto shadow-md mx-auto my-4',
+                    class: 'rounded-xl max-w-full h-auto shadow-lg mx-auto my-6 border border-gray-100',
                 },
             }),
             Link.configure({
                 openOnClick: false,
                 HTMLAttributes: {
-                    class: 'text-blue-600 underline hover:text-blue-800',
+                    class: 'text-blue-600 underline hover:text-blue-800 transition-colors cursor-pointer',
                 },
             }),
         ],
@@ -288,7 +325,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
         },
         editorProps: {
             attributes: {
-                class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none max-w-none p-4 min-h-[300px]',
+                class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none max-w-none p-6 min-h-[400px] leading-relaxed font-inter',
             },
         },
     });
@@ -415,25 +452,45 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
             // Strict filtering for valid post objects
             const validPosts = (data || []).filter(p => p && typeof p === 'object' && p.title);
             setPosts(validPosts);
-        } catch (err) {
-            console.error('Error fetching admin posts:', err);
+        } catch (err: any) {
+            console.error('Error fetching admin posts:', err.message || JSON.stringify(err, Object.getOwnPropertyNames(err)));
         }
     };
     const fetchInquiries = async () => {
-        const { data } = await supabase.from('inquiries').select('*').order('created_at', { ascending: false });
-        setInquiries(data || []);
+        try {
+            const { data, error } = await supabase.from('inquiries').select('*').order('created_at', { ascending: false });
+            if (error) throw error;
+            setInquiries(data || []);
+        } catch (err: any) {
+            console.error('Error fetching inquiries:', err.message || JSON.stringify(err, Object.getOwnPropertyNames(err)));
+        }
     };
     const fetchEvents = async () => {
-        const { data } = await supabase.from('events').select('*').order('created_at', { ascending: false });
-        setEvents(data || []);
+        try {
+            const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+            if (error) throw error;
+            setEvents(data || []);
+        } catch (err: any) {
+            console.error('Error fetching events:', err.message || JSON.stringify(err, Object.getOwnPropertyNames(err)));
+        }
     };
     const fetchTestimonials = async () => {
-        const { data } = await supabase.from('testimonials').select('*').order('created_at', { ascending: false });
-        setTestimonials(data || []);
+        try {
+            const { data, error } = await supabase.from('testimonials').select('*').order('created_at', { ascending: false });
+            if (error) throw error;
+            setTestimonials(data || []);
+        } catch (err: any) {
+            console.error('Error fetching testimonials:', err.message || JSON.stringify(err, Object.getOwnPropertyNames(err)));
+        }
     };
     const fetchGallery = async () => {
-        const { data } = await supabase.from('gallery_items').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false });
-        setGallery(data || []);
+        try {
+            const { data, error } = await supabase.from('gallery_items').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false });
+            if (error) throw error;
+            setGallery(data || []);
+        } catch (err: any) {
+            console.error('Error fetching gallery:', err.message || JSON.stringify(err, Object.getOwnPropertyNames(err)));
+        }
     };
 
 

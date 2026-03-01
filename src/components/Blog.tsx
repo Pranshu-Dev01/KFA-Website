@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, User, Eye, Tag, ArrowLeft, Home, Share2, Search } from 'lucide-react';
 import { supabase, BlogPost } from '../lib/supabase';
-import { Helmet } from 'react-helmet-async';
+import ReadingProgressBar from './ReadingProgressBar';
+import TableOfContents from './TableOfContents';
 
 interface BlogProps {
     initialPostId?: string | null;
@@ -93,7 +94,13 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
                     }
                 }
             } catch (err: any) {
-                console.error('Error loading blog data:', err);
+                console.error('Error loading blog data:', {
+                    message: err.message,
+                    details: err.details,
+                    hint: err.hint,
+                    code: err.code,
+                    fullError: err
+                });
                 setError(err.message || 'Failed to load blog posts');
             } finally {
                 setLoading(false);
@@ -124,9 +131,16 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
     };
 
     const handleBack = () => {
-        setSelectedPost(null);
-        setError(null);
-        window.history.pushState({}, '', window.location.pathname);
+        if (selectedPost) {
+            setSelectedPost(null);
+            setError(null);
+            window.history.pushState({}, '', window.location.pathname);
+        } else if (onBack) {
+            onBack();
+        }
+    };
+
+    const handleExit = () => {
         if (onBack) onBack();
     };
 
@@ -166,48 +180,50 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
         // --- SINGLE POST VIEW ---
         if (selectedPost) {
             return (
-                <div className="max-w-4xl mx-auto">
-                    {/* FIX 2: Specific Helmet for Single Article */}
-                    <Helmet>
-                        <title>{selectedPost.title} | Krishna Flute Academy</title>
-                        <meta name="description" content={selectedPost.excerpt} />
+                <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-10 lg:items-start">
+                    {/* Sidebar - Table of Contents (Mobile primary, Desktop right sidebar) */}
+                    <aside className="w-full lg:w-1/4 flex-shrink-0 lg:order-last">
+                        <TableOfContents contentHtml={processedContent || selectedPost.content || ''} />
+                    </aside>
 
-                        {/* Open Graph / Facebook / WhatsApp */}
-                        <meta property="og:type" content="article" />
-                        <meta property="og:title" content={selectedPost.title} />
-                        <meta property="og:description" content={selectedPost.excerpt} />
-                        <meta property="og:image" content={selectedPost.featured_image || `${window.location.origin}/image.png`} />
-                        <meta property="og:url" content={`${window.location.origin}/?post=${selectedPost.slug || selectedPost.id}`} />
+                    {/* Main Content Column */}
+                    <div className="lg:w-3/4 max-w-4xl mx-auto lg:mx-0 flex-grow lg:order-first">
+                        <button onClick={handleBack} className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 mb-8 transition-colors group">
+                            <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" /> <span>Back to all posts</span>
+                        </button>
 
-                        {/* Twitter */}
-                        <meta name="twitter:card" content="summary_large_image" />
-                        <meta name="twitter:title" content={selectedPost.title} />
-                        <meta name="twitter:description" content={selectedPost.excerpt} />
-                        <meta name="twitter:image" content={selectedPost.featured_image || `${window.location.origin}/image.png`} />
-                    </Helmet>
+                        <article className="bg-white rounded-2xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {selectedPost.featured_image && <img src={selectedPost.featured_image} alt={selectedPost.title} className="w-full h-80 md:h-96 object-cover" />}
+                            <div className="p-6 md:p-8 lg:p-10">
+                                <div className="flex justify-between items-start mb-6">
+                                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-blue-900 leading-tight">{selectedPost.title}</h1>
+                                    <button onClick={(e) => handleCopyLink(e, selectedPost.slug || selectedPost.id)} className="p-2 ml-4 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full flex-shrink-0 transition-colors" title="Share"><Share2 className="w-5 h-5" /></button>
+                                </div>
+                                <div className="flex flex-wrap gap-4 mb-8 text-blue-700 bg-blue-50/50 p-4 rounded-xl">
+                                    <div className="flex items-center gap-2"><User className="w-5 h-5 text-blue-500" /> <span className="font-medium">{selectedPost.author_name}</span></div>
+                                    <div className="flex items-center gap-2"><Calendar className="w-5 h-5 text-blue-500" /> <span>{formatDate(selectedPost.published_at)}</span></div>
+                                    <div className="flex items-center gap-2"><Eye className="w-5 h-5 text-blue-500" /> <span>{selectedPost.view_count} views</span></div>
+                                </div>
+                                <div className="flex flex-wrap gap-2 mb-8">
+                                    {(selectedPost.tags || []).map((tag, i) => <span key={i} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex items-center gap-1"><Tag className="w-3 h-3" />{tag}</span>)}
+                                </div>
 
-                    <button onClick={handleBack} className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 mb-8 transition-colors group">
-                        <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" /> <span>Back to all posts</span>
-                    </button>
-
-                    <article className="bg-white rounded-2xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {selectedPost.featured_image && <img src={selectedPost.featured_image} alt={selectedPost.title} className="w-full h-96 object-cover" />}
-                        <div className="p-8">
-                            <div className="flex justify-between items-start mb-6">
-                                <h1 className="text-4xl md:text-5xl font-bold text-blue-900 leading-tight">{selectedPost.title}</h1>
-                                <button onClick={(e) => handleCopyLink(e, selectedPost.slug || selectedPost.id)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors" title="Share"><Share2 className="w-5 h-5" /></button>
+                                {/* Prose Container with Fluid Typography */}
+                                <div className="overflow-x-auto w-full bg-white">
+                                    <div
+                                        className="prose prose-blue max-w-none text-blue-800/90 tiptap prose-styles-preserved
+                                        text-[clamp(1rem,0.95rem+0.25vw,1.125rem)] leading-relaxed
+                                        [&_strong]:text-blue-900 [&_b]:text-blue-900 
+                                        [&_h1]:text-blue-950 [&_h2]:text-blue-950 [&_h3]:text-blue-950 
+                                        [&_img]:rounded-xl [&_img]:shadow-md
+                                        [&_table]:block [&_table]:overflow-x-auto [&_table]:whitespace-nowrap [&_table]:w-full [&_table]:border-collapse [&_th]:bg-blue-50 [&_th]:p-3 [&_td]:p-3 [&_td]:border [&_th]:border [&_th]:min-w-[120px] [&_td]:min-w-[120px] [&_td]:border-blue-200 [&_th]:border-blue-200
+                                        [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&_li::marker]:text-blue-600"
+                                        dangerouslySetInnerHTML={{ __html: processedContent || selectedPost.content }}
+                                    />
+                                </div>
                             </div>
-                            <div className="flex flex-wrap gap-4 mb-8 text-blue-700">
-                                <div className="flex items-center gap-2"><User className="w-5 h-5" /> <span>{selectedPost.author_name}</span></div>
-                                <div className="flex items-center gap-2"><Calendar className="w-5 h-5" /> <span>{formatDate(selectedPost.published_at)}</span></div>
-                                <div className="flex items-center gap-2"><Eye className="w-5 h-5" /> <span>{selectedPost.view_count} views</span></div>
-                            </div>
-                            <div className="flex flex-wrap gap-2 mb-8">
-                                {(selectedPost.tags || []).map((tag, i) => <span key={i} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">{tag}</span>)}
-                            </div>
-                            <div className="prose prose-lg prose-blue max-w-none text-blue-800 font-montserrat [&_strong]:font-extrabold [&_strong]:text-blue-900 [&_b]:font-extrabold [&_b]:text-blue-900 [&_h1]:font-extrabold [&_h2]:font-bold [&_h3]:font-bold [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&_li::marker]:text-blue-900 [&_li::marker]:font-bold tiptap" dangerouslySetInnerHTML={{ __html: selectedPost.content }} />
-                        </div>
-                    </article>
+                        </article>
+                    </div>
                 </div>
             );
         }
@@ -215,28 +231,10 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
         // --- BLOG LIST VIEW ---
         return (
             <div className="max-w-7xl mx-auto">
-                {/* FIX 3: Generic Helmet for List View */}
-                <Helmet>
-                    <title>Blog | Krishna Flute Academy</title>
-                    <meta name="description" content="Read the latest insights and flute tutorials from Krishna Flute Academy." />
-
-                    {/* Open Graph / Facebook / WhatsApp */}
-                    <meta property="og:type" content="website" />
-                    <meta property="og:title" content="Blog | Krishna Flute Academy" />
-                    <meta property="og:description" content="Read the latest insights and flute tutorials from Krishna Flute Academy." />
-                    <meta property="og:image" content={`${window.location.origin}/image.png`} />
-                    <meta property="og:url" content={window.location.href} />
-
-                    {/* Twitter */}
-                    <meta name="twitter:card" content="summary_large_image" />
-                    <meta name="twitter:title" content="Blog | Krishna Flute Academy" />
-                    <meta name="twitter:description" content="Read the latest insights and flute tutorials from Krishna Flute Academy." />
-                    <meta name="twitter:image" content={`${window.location.origin}/image.png`} />
-                </Helmet>
 
                 <div className="mb-8">
                     <button
-                        onClick={() => window.location.href = window.location.pathname}
+                        onClick={handleExit}
                         className="flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all shadow-md active:scale-95"
                     >
                         <Home className="w-5 h-5" /> <span>Back to Home</span>
@@ -319,8 +317,30 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
         );
     };
 
+    // --- TOC HTML PROCESSING ---
+    const [processedContent, setProcessedContent] = useState<string>('');
+
+    useEffect(() => {
+        if (!selectedPost?.content || typeof window === 'undefined') return;
+
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(selectedPost.content, 'text/html');
+            const headings = doc.querySelectorAll('h1, h2, h3');
+            headings.forEach(heading => {
+                if (!heading.id && heading.textContent) {
+                    heading.id = heading.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+                }
+            });
+            setProcessedContent(doc.body.innerHTML);
+        } catch (e) {
+            console.error("Error processing HTML for TOC:", e);
+        }
+    }, [selectedPost?.content]);
+
     return (
-        <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-blue-50/50">
+        <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-blue-50/50 pt-28">
+            {selectedPost && <ReadingProgressBar />}
             {renderContent()}
         </div>
     );
