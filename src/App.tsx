@@ -1262,7 +1262,7 @@ Hello Krishna Flute Academy, I have an inquiry!
 
                 {/* Download Brochure Button */}
                 <a
-                    href={`${import.meta.env.BASE_URL}KFA-Brochure.pdf`}
+                    href={`/KFA-Brochure.pdf`}
                     download="Krishna-Flute-Academy-Brochure.pdf"
                     className="fixed bottom-12 right-6 z-50 p-4 bg-blue-700 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 hover:bg-blue-800"
                     aria-label="Download our brochure"
