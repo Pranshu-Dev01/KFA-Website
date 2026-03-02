@@ -369,6 +369,18 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
             }
         };
     }, [editor]);
+
+    // A simple helper to clean and shorten slugs
+    const generateCleanSlug = (title: string) => {
+        return title
+            .toLowerCase()
+            .replace(/[^\w ]+/g, '') // Remove special characters
+            .split(' ')
+            .filter(word => word.length > 2) // Remove tiny stop words
+            .slice(0, 6) // Only take the first 6 meaningful words
+            .join('-');
+    };
+
     const handleSave = async () => {
         if (!currentPost.title) return alert("Title is required");
         setLoading(true);
@@ -377,7 +389,7 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
             // 1. Prepare Data
             const postData = {
                 title: currentPost.title,
-                slug: currentPost.slug || currentPost.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                slug: currentPost.slug || generateCleanSlug(currentPost.title),
                 excerpt: currentPost.excerpt,
                 content: currentPost.content,
                 featured_image: currentPost.featured_image, // Use uploaded URL logic here if needed

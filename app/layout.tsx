@@ -1,7 +1,21 @@
 import type { Metadata } from "next";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
+const inter = Inter({
+    subsets: ["latin"],
+    variable: '--font-inter',
+    weight: ['300', '400', '500', '600']
+});
+
+const playfair = Playfair_Display({
+    subsets: ["latin"],
+    variable: '--font-playfair',
+    weight: ['400', '600', '700']
+});
+
 export const metadata: Metadata = {
+    metadataBase: new URL('https://www.krishnafluteacademy.com'),
     title: "Krishna Flute Academy",
     description: "Learn the divine art of flute playing with Guru Krishna Flute Academy. Professional courses, handcrafted flutes, and musical wisdom.",
     openGraph: {
@@ -34,8 +48,8 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" className="scroll-behavior-smooth">
-            <body className="font-inter antialiased">
+        <html lang="en" className={`scroll-behavior-smooth ${inter.variable} ${playfair.variable}`}>
+            <body className={`${inter.className} antialiased font-sans`}>
                 {children}
             </body>
         </html>

@@ -1,5 +1,5 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "kfa-website",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -28,9 +28,8 @@
     "@tiptap/starter-kit": "^2.27.2",
     "lucide-react": "^0.344.0",
     "next": "^16.1.6",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-helmet-async": "^2.0.5",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "react-responsive-carousel": "^3.2.23"
   },
   "devDependencies": {
