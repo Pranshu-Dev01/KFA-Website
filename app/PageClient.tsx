@@ -73,7 +73,7 @@ const BlogSection = ({
                     {posts.map((post, index) => (
                         <div
                             key={post.id}
-                            onClick={() => onReadPost(post.id)}
+                            onClick={() => onReadPost(post.slug || post.id)}
                             className={`relative block bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-[1.02] transition-all duration-500 hover:shadow-2xl group cursor-pointer 
                                 flex-shrink-0 w-[85vw] sm:w-[350px] md:w-[400px] snap-center
                                 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
@@ -396,7 +396,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                                 <button onClick={() => scrollToSection('founder')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base font-medium">Founder</button>
                                 <button onClick={() => scrollToSection('courses')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base font-medium">Courses</button>
                                 <button onClick={() => { setCurrentView('gallery'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base font-medium">Gallery</button>
-                                <button onClick={() => { setCurrentView('blog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base font-medium">Blog</button>
+                                <a href="/blog/" className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base font-medium">Blog</a>
                                 <button onClick={() => scrollToSection('contact')} className="text-blue-700 hover:text-blue-900 transition-colors text-sm lg:text-base font-medium">Contact</button>
                             </div>
 
@@ -458,7 +458,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                                     <button onClick={() => { scrollToSection('founder'); setMobileMenuOpen(false); }} className="block w-full text-left text-lg font-semibold text-blue-900 transition-colors py-2">Founder</button>
                                     <button onClick={() => { scrollToSection('courses'); setMobileMenuOpen(false); }} className="block w-full text-left text-lg font-semibold text-blue-900 transition-colors py-2">Courses</button>
                                     <button onClick={() => { setCurrentView('gallery'); setMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="block w-full text-left text-lg font-semibold text-blue-900 transition-colors py-2">Gallery</button>
-                                    <button onClick={() => { setCurrentView('blog'); setMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="block w-full text-left text-lg font-semibold text-blue-900 transition-colors py-2">Blog</button>
+                                    <a href="/blog/" className="block w-full text-left text-lg font-semibold text-blue-900 transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>Blog</a>
                                     <button onClick={() => { scrollToSection('contact'); setMobileMenuOpen(false); }} className="block w-full text-left text-lg font-semibold text-blue-900 transition-colors py-2">Contact</button>
 
                                     <div className="pt-6 border-t border-gray-200">
@@ -689,9 +689,7 @@ Hello Krishna Flute Academy, I have an inquiry!
                     visible={visibleSections['blog']}
                     posts={recentBlogPosts}
                     onViewAll={() => {
-                        setSelectedPostId(null);
-                        setCurrentView('blog');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        window.location.href = '/blog/';
                     }}
                     onReadPost={(id) => {
                         window.location.href = `/blog/${id}`;

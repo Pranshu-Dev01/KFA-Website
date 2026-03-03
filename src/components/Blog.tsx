@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { Calendar, User, Eye, Tag, ArrowLeft, Home, Share2, Search } from 'lucide-react';
+import Link from 'next/link';
 import { supabase, BlogPost } from '../lib/supabase';
 import ReadingProgressBar from './ReadingProgressBar';
 import TableOfContents from './TableOfContents';
@@ -252,12 +255,12 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
             <div className="max-w-7xl mx-auto">
 
                 <div className="mb-8">
-                    <button
-                        onClick={handleExit}
-                        className="flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all shadow-md active:scale-95"
+                    <Link
+                        href="/"
+                        className="inline-flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all shadow-md active:scale-95"
                     >
                         <Home className="w-5 h-5" /> <span>Back to Home</span>
-                    </button>
+                    </Link>
                 </div>
 
                 <div className="text-center mb-16 animate-in fade-in duration-700">

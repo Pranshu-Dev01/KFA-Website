@@ -98,7 +98,7 @@ export default function ClientBlogPost({ post: initialPost }: ClientBlogPostProp
 
                 {/* Main Content Column */}
                 <div className="lg:w-3/4 max-w-4xl mx-auto lg:mx-0 flex-grow lg:order-first">
-                    <Link href="/?post=" className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-800 mb-8 transition-colors group">
+                    <Link href="/blog/" className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-800 mb-8 transition-colors group">
                         <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" /> <span>Back to all posts</span>
                     </Link>
 
