@@ -21,9 +21,9 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
     // --- Helper: Copy Link ---
     const handleCopyLink = (e: React.MouseEvent, slug: string) => {
         e.stopPropagation();
-        const url = `${window.location.origin}/?post=${slug}`;
+        const url = `${window.location.origin}/blog/${slug}/`;
         navigator.clipboard.writeText(url).then(() => {
-            alert("Link copied to clipboard!");
+            alert("Link copied!");
         });
     };
 
@@ -142,11 +142,8 @@ export const Blog: React.FC<BlogProps> = ({ initialPostId, onBack }) => {
 
     const handlePostClick = (post: BlogPost) => {
         if (!post) return;
-        setSelectedPost(post);
-        incrementViewCount(post.id);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
         const identifier = post.slug || post.id;
-        window.history.pushState({}, '', `?post=${identifier}`);
+        window.location.href = `/blog/${identifier}/`;
     };
 
     const handleBack = () => {

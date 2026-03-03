@@ -41,7 +41,7 @@ const BlogSection = ({
     // 👇 Helper to copy link without opening the post
     const handleCopyLink = (e: React.MouseEvent, slug: string) => {
         e.stopPropagation();
-        const url = `${window.location.origin}/?post=${slug}`;
+        const url = `${window.location.origin}/blog/${slug}`;
         navigator.clipboard.writeText(url).then(() => alert("Link copied to clipboard!"));
     };
 
@@ -117,15 +117,23 @@ export function PageClient() {
     const searchParams = useSearchParams();
     const postFromUrl = searchParams.get('post');
 
+    // Redirect legacy /?post=slug URLs to /blog/slug/ so WhatsApp previews
+    // use the correct OG metadata (featured image + excerpt) from the blog page.
+    useEffect(() => {
+        if (postFromUrl) {
+            window.location.replace(`/blog/${postFromUrl}/`);
+        }
+    }, [postFromUrl]);
+
     const [scrolled, setScrolled] = useState(false);
     const [visibleSections, setVisibleSections] = useState<Record<string, boolean>>({});
-    const [currentView, setCurrentView] = useState<'home' | 'blog' | 'admin' | 'gallery'>(postFromUrl ? 'blog' : 'home');
+    const [currentView, setCurrentView] = useState<'home' | 'blog' | 'admin' | 'gallery'>('home');
     const [recentBlogPosts, setRecentBlogPosts] = useState<BlogPost[]>([]);
     const [isAdmin, setIsAdmin] = useState(false);
     const [adminPassword, setAdminPassword] = useState('');
     const [showAdminLogin, setShowAdminLogin] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [selectedPostId, setSelectedPostId] = useState<string | null>(postFromUrl);
+    const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
     const [formName, setFormName] = useState('');
     const [formEmail, setFormEmail] = useState('');
     const [formPhone, setFormPhone] = useState('');
@@ -137,6 +145,15 @@ export function PageClient() {
     const [testimonials, setTestimonials] = useState<any[]>([]);
     const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
     const [selectedGalleryItem, setSelectedGalleryItem] = useState<GalleryItem | null>(null);
+
+    // While redirecting, show a spinner so nothing flashes
+    if (postFromUrl) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
 
     const getYouTubeThumbnail = (url: string) => {
         let id = '';
