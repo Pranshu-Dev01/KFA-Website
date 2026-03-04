@@ -395,8 +395,10 @@ export const BlogAdmin: React.FC<BlogAdminProps> = ({ onBackToHome }) => {
                 featured_image: currentPost.featured_image, // Use uploaded URL logic here if needed
                 tags: currentPost.tags,
                 published: currentPost.published || false,
-                // Only update published_at if it's being published now
-                published_at: currentPost.published ? new Date().toISOString() : null,
+                // Only set published_at when publishing for the first time
+                published_at: currentPost.published
+                    ? (currentPost.published_at || new Date().toISOString())
+                    : null,
                 author_name: currentPost.author_name || 'Admin',
             };
 

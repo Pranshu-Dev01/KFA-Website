@@ -2,6 +2,10 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { Blog } from '../../src/components/Blog';
 
+// ISR: refresh blog list every 60 seconds so new posts appear automatically
+export const revalidate = 60;
+
+
 export const metadata: Metadata = {
     title: 'Blog | Krishna Flute Academy',
     description: 'Explore articles on Indian classical flute, music theory, Vedic scales, mindfulness, and musical wisdom from Guru Krishna Gopal Bhaumik.',

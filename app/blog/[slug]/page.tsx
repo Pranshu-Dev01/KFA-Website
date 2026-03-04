@@ -1,4 +1,8 @@
 import { supabase } from '../../../src/lib/supabase';
+
+// ISR: Vercel regenerates this page in the background every 60 seconds.
+// Content changes in Supabase appear on the live site within ~1 minute.
+export const revalidate = 60;
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import ClientBlogPost from './ClientBlogPost';
